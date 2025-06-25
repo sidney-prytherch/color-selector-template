@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Color Selector</title>
+    <link rel="icon" type="image/x-icon" href="./selector-icon.png">
+    <link rel="stylesheet" href="style.css">
+    <script src="index.js"></script>
+    <script src="Creature.js"></script>
+    <script src="imageData.js"></script>
+    <script src="ColorModifiers.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row container">
+            <div class="container">
+                <canvas id="creatureCanvas" height="420" width="460"></canvas>
+                <div class="horizontal container center">
+                    <button width="480" id="randomizeCreatureEverything">
+                        <h3>Randomize Colors</h3>
+                    </button>
+                    <button width="480" id="randomizeCreatureColors">
+                        <h3>Randomize Hues</h3>
+                    </button>
+                    <div>
+                        <button id="uniformColorGroupAHues">Uniform GroupA Hues</button>
+                        <button id="uniformColorGroupBHues">Uniform GroupB Hues</button>
+                        <button id="chaosCreatureButton">?</button>
+                    </div>
+                </div>
+            </div>
+            <table id="table">
+            </table>
+            <div class="container">
+                </br>
+                <span>Click [INSERT NAME] to pause/continue animation</span>
+                <label for="pixelSizeSlider">Change Image Size:</label>
+                <input class="slider" id="pixelSizeSlider" type="range" min="1" max="20" value="10" />
+                <div class="container row">
+
+                    <button id="saveGif">Save as video (webm)</button>
+                    <span>(you can create a gif from a webm with a
+                        convertor)</span>
+                </div>
+                <textarea id="textarea" disabled="true" rows="16" value=""></textarea>
+                <p><em><b>[ADDITIONAL INFO]</b></em></p>
+
+            </div>
+
+        </div>
+        <div>
+
+
+            <table>
+                <tr>
+                    <th></th>
+                    <th>GroupA Color</th>
+                    <th>GroupB Color</th>
+                    <th>All Colors</th>
+                </tr>
+                <tr>
+                    <td>Hue Sliders:</td>
+                    <td><input class="slider slider-hue" id="colorGroupASlider" type="range" min="-180"
+                            max="180" /></td>
+                    <td><input class="slider slider-hue" id="colorGroupBSlider" type="range" min="-180"
+                            max="180" /></td>
+                    <td><input class="slider slider-hue" id="hueSlider" type="range" min="-180" max="180" /></td>
+                </tr>
+                <tr>
+                    <td>Saturation Sliders:</td>
+                    <td><input class="slider slider-saturation" id="saturationcolorGroupASlider" type="range"
+                            min="-1" max="1" step=".01" /></td>
+                    <td><input class="slider slider-saturation" id="saturationcolorGroupBSlider" type="range"
+                            min="-1" max="1" step=".01" /></td>
+                    <td><input class="slider slider-saturation" id="saturationSlider" type="range" min="-1" max="1"
+                            step=".01" /></td>
+                </tr>
+                <tr>
+                    <td>Brightness Sliders:</td>
+                    <td><input class="slider slider-brightness" id="brightnesscolorGroupASlider" type="range"
+                            min="-1" max="1" step=".01" /></td>
+                    <td><input class="slider slider-brightness" id="brightnesscolorGroupBSlider" type="range"
+                            min="-1" max="1" step=".01" /></td>
+                    <td><input class="slider slider-brightness" id="brightnessSlider" type="range" min="-1" max="1"
+                            step=".01" /></td>
+                </tr>
+                <tr>
+                    <td>Randomize Colors:</td>
+                    <td><button id="randomizeColorGroupAColors">Randomize Colors (GroupA)</button></td>
+                    <td><button id="randomizeColorGroupBColors">Randomize Colors (GroupB)</button></td>
+                    <td><button id="randomizeCreatureColorsTable">Randomize All Colors</button></td>
+                </tr>
+                <tr>
+                    <td>Randomize Hues:</td>
+                    <td><button id="randomizeColorGroupAHues">Randomize Hues (GroupA)</button></td>
+                    <td><button id="randomizeColorGroupBHues">Randomize Hues (GroupB)</button></td>
+                    <td><button id="randomizeHues">Randomize All Hues</button></td>
+                </tr>
+                <tr>
+                    <td>Reset Colors:</td>
+                    <td><button id="resetColorGroupAColors">Reset GroupA Colors</button></td>
+                    <td><button id="resetColorGroupBColors">Reset GroupB Colors</button></td>
+                    <td><button id="resetCreatureColors">Reset All Colors</button></td>
+                </tr>
+            </table>
+
+
+        </div>
+    </div>
+</body>
+
+</html>

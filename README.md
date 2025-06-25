@@ -1,0 +1,1 @@
+Feel free to fork this project and repurpose it for your own needs. Simply open index.html in your browser to view. Be sure to refresh after you make changes.
