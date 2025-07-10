@@ -7,6 +7,7 @@ function loadValues() {
 
     //this will get rewritten automatically now
     let maxPixelSize = 20;
+    let animationMSPerFrame = 100;
 
     document.getElementById("span-instructions").innerHTML = `Click ${characterName} to pause/continue animation`
     document.getElementById("additional-info").innerHTML = `${additionalInfoOrInstructions}`
@@ -16,6 +17,7 @@ function loadValues() {
     let textarea = document.getElementById("textarea")
     let pixelSizeSlider = document.getElementById("pixelSizeSlider")
     let canvasSizeSlider = document.getElementById("canvasSizeSlider")
+    let animationSpeedSlider = document.getElementById("animationSpeedSlider")
     let colorHexTable = document.getElementById("colorHexTable");
     let saveGifButton = document.getElementById("saveGif");
     let randomizeCreatureEverythingButton = document.getElementById("randomizeCreatureEverything")
@@ -280,7 +282,7 @@ function loadValues() {
     }
 
     // let creature = new Creature(creatureImages, creatureColors, defaultCreatureColors, canvas, ctx, colorGroupAIndices, creatureTableRows, yamlOptionName, backgroundColorInCanvas, textarea, resetSliders, colorModifiers);
-    let creature = new Creature(animation, creatureColors, defaultCreatureColors, canvas, ctx, colorGroups, creatureTableRows, yamlOptionName, backgroundColorInCanvas, textarea, resetSliders, mainColorsPerGroup, firstColorIndexInYamlOption, maxPixelSize);
+    let creature = new Creature(animation, creatureColors, defaultCreatureColors, canvas, ctx, colorGroups, creatureTableRows, yamlOptionName, backgroundColorInCanvas, textarea, resetSliders, mainColorsPerGroup, firstColorIndexInYamlOption, maxPixelSize, animationMSPerFrame);
 
 
     animationDropDown.addEventListener("change", () => {
@@ -371,6 +373,13 @@ function loadValues() {
 
     pixelSizeSlider.max = `${maxPixelSize}`
     pixelSizeSlider.addEventListener("input", () => { creature.setPixelSize(pixelSizeSlider.value) })
+
+    animationSpeedSlider.addEventListener("input", () => {
+        let framesPerMS = Math.round(-199 * Math.pow(animationSpeedSlider.value, 2) + 200)
+        creature.setAnimationSpeed(framesPerMS);
+        creature.stopAnimation();
+        creature.startAnimation();
+    })
 
     canvasSizeSlider.addEventListener("change", () => {
         canvas.height = canvasSizeSlider.value

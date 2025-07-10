@@ -17,8 +17,8 @@ class Creature {
      * @param {Number} firstColorIndex - in the yaml, the first color has this index
      * @param {Number} maxPixelSize - max pixel size
      */
-    constructor(animationImages, colorObjects, defaultColors, canvas, context, colorGroups, tableRows, yamlKey, backgroundColor, textarea, resetSliders, mainColorsPerGroup, firstColorIndex, maxPixelSize) {
-        this.animationMSPerFrame = 100;
+    constructor(animationImages, colorObjects, defaultColors, canvas, context, colorGroups, tableRows, yamlKey, backgroundColor, textarea, resetSliders, mainColorsPerGroup, firstColorIndex, maxPixelSize, animationMSPerFrame) {
+        this.animationMSPerFrame = animationMSPerFrame;
         this.colorObjects = colorObjects;
         this.canvas = canvas;
         this.ctx = context;
@@ -44,6 +44,10 @@ class Creature {
         this.maxPixelSize = maxPixelSize;
 
         // this.startAnimation();
+    }
+
+    setAnimationSpeed(animationMSPerFrame) {
+        this.animationMSPerFrame = animationMSPerFrame;
     }
 
     setDefaultColors(defaultColors) {
