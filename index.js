@@ -375,7 +375,7 @@ function loadValues() {
     pixelSizeSlider.addEventListener("input", () => { creature.setPixelSize(pixelSizeSlider.value) })
 
     animationSpeedSlider.addEventListener("input", () => {
-        let framesPerMS = Math.round(-199 * Math.pow(animationSpeedSlider.value, 2) + 200)
+        let framesPerMS = Math.round(-185 * Math.pow(animationSpeedSlider.value, 2) + 200)
         creature.setAnimationSpeed(framesPerMS);
         creature.stopAnimation();
         creature.startAnimation();
