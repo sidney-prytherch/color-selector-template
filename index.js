@@ -18,11 +18,27 @@ function loadValues() {
     let colorHexTable = document.getElementById("colorHexTable");
     let saveGifButton = document.getElementById("saveGif");
     let randomizeCreatureEverythingButton = document.getElementById("randomizeCreatureEverything")
+    let animationDropDown = document.getElementById("animation-dropdown");
+    let defaultPaletteDropdown = document.getElementById("default-palette-dropdown");
 
+    for (let animation of animations) {
+        let option = document.createElement("option");
+        option.value = animation.animationName;
+        option.innerHTML = animation.animationName;
+        animationDropDown.appendChild(option);
+    }
+
+    for (let defaultPalette of defaultPalettes) {
+        let option = document.createElement("option");
+        option.value = defaultPalette.name;
+        option.innerHTML = defaultPalette.name;
+        defaultPaletteDropdown.appendChild(option);
+    }
 
     let maxPixelHeight = 0;
     let maxPixelWidth = 0;
-    for (let image of creatureImages) {
+    let animation = animations[0].animationImages;
+    for (let image of animation) {
         let pixelHeight = image.length;
         let pixelWidth = image.length > 0 ? image[0].length : 0;
         maxPixelHeight = Math.max(maxPixelHeight, pixelHeight);
@@ -36,8 +52,8 @@ function loadValues() {
     let newCanvasHeight = maxPixelSize * maxPixelHeight + 40
     let newCanvasWidth = maxPixelSize * maxPixelWidth + 40
 
-    canvas.height=newCanvasHeight
-    canvas.width=newCanvasWidth
+    canvas.height = newCanvasHeight
+    canvas.width = newCanvasWidth
 
     let randomizeCreatureColorsButton = document.getElementById("randomizeCreatureColors");
 
@@ -89,9 +105,7 @@ function loadValues() {
     colorModTableUniformHueButtonRow.appendChild(td)
     colorModTable.appendChild(colorModTableUniformHueButtonRow)
 
-    console.log({colorGroups})
-    colorGroups.push(colors.map((color, index) => index))
-    console.log({colorGroups})
+    colorGroups.push(defaultColors.map((color, index) => index))
 
     let hueSliders = []
     let saturationSliders = []
@@ -100,56 +114,26 @@ function loadValues() {
     let resetColorButtons = []
     let randomizeColorButtons = []
     let randomizeHueButtons = []
-    let colorModifierArray = []
 
 
     for (let i = 0; i < colorGroups.length; i++) {
-        // console.log("GROUP " + i)
-        // let colorGroupIndices = colorGroups[i];
-
-        // let colorGroupColorMods = {}
-        // colorModifierArray.push(colorGroupColorMods)
-
-        // let minBrightness = 1
-        // let maxBrightness = 0
-        // let minSaturation = 1
-        // let maxSaturation = 0
-
-        // for (let colorIndex of colorGroupIndices) {
-        //     let color = colors[colorIndex];
-        //     let hsl = ColorModifiers.rgbToHSL(color);
-        //     console.log("  sat: " + Math.round(hsl.s * 100) + ", bri: " + Math.round(hsl.l * 100))
-        //     minBrightness = Math.min(minBrightness, hsl.l)
-        //     maxBrightness = Math.max(maxBrightness, hsl.l)
-        //     minSaturation = Math.min(minSaturation, hsl.s)
-        //     maxSaturation = Math.max(maxSaturation, hsl.s)
-        // }
-
-        // colorGroupColorMods.minSaturationChange = -0 // -0.1 - minSaturation
-        // colorGroupColorMods.maxSaturationChange = 0 // 1.1 - maxSaturation
-        // colorGroupColorMods.minBrightnessChange = -2 // -0.1 - minBrightness
-        // colorGroupColorMods.maxBrightnessChange = 2 // 1.1 - maxBrightness
-
-        // console.log({
-        //     minBrightness,
-        //     maxBrightness,
-        //     minSaturation,
-        //     maxSaturation,
-        // })
 
         let colorGroupNum = i + 1
         let colorGroupID = i < colorGroups.length - 1 ? `Group ${colorGroupNum}` : "All"
+        if (i < colorGroupNames.length) {
+            colorGroupID = colorGroupNames[i];
+        }
         let td = document.createElement("th")
-        td.innerHTML=`${colorGroupID} Colors`
+        td.innerHTML = `${colorGroupID} Colors`
         colorModTableHeaderRow.appendChild(td)
 
         let hueSlider = document.createElement("input");
         hueSlider.id = `hueSliderGroup${colorGroupNum}`
         hueSlider.classList.add('slider')
         hueSlider.classList.add('slider-hue')
-        hueSlider.type="range"
-        hueSlider.min="-180"
-        hueSlider.max="180"
+        hueSlider.type = "range"
+        hueSlider.min = "-180"
+        hueSlider.max = "180"
         td = document.createElement("td")
         td.appendChild(hueSlider)
         colorModTableHueSliderRow.appendChild(td)
@@ -159,9 +143,9 @@ function loadValues() {
         saturationSlider.id = `saturationSliderGroup${colorGroupNum}`
         saturationSlider.classList.add('slider')
         saturationSlider.classList.add('slider-saturation')
-        saturationSlider.type="range"
-        saturationSlider.min="-100"
-        saturationSlider.max="100"
+        saturationSlider.type = "range"
+        saturationSlider.min = "-100"
+        saturationSlider.max = "100"
         td = document.createElement("td")
         td.appendChild(saturationSlider)
         saturationSliders.push(saturationSlider)
@@ -171,9 +155,9 @@ function loadValues() {
         brightnessSlider.id = `brightnessSliderGroup${colorGroupNum}`
         brightnessSlider.classList.add('slider')
         brightnessSlider.classList.add('slider-brightness')
-        brightnessSlider.type="range"
-        brightnessSlider.min="-100"
-        brightnessSlider.max="100"
+        brightnessSlider.type = "range"
+        brightnessSlider.min = "-100"
+        brightnessSlider.max = "100"
         td = document.createElement("td")
         td.appendChild(brightnessSlider)
         brightnessSliders.push(brightnessSlider)
@@ -181,7 +165,7 @@ function loadValues() {
 
         let uniformHueButton = document.createElement("button");
         uniformHueButton.innerHTML = `Remove outlier colors in ${colorGroupID}`
-        uniformHueButton.title=`Set all ${colorGroupID} colors to the same hue`
+        uniformHueButton.title = `Set all ${colorGroupID} colors to the same hue`
         td = document.createElement("td")
         td.appendChild(uniformHueButton)
         colorModTableUniformHueButtonRow.appendChild(td)
@@ -189,23 +173,23 @@ function loadValues() {
 
         let resetColorButton = document.createElement("button");
         resetColorButton.innerHTML = `Reset Colors (${colorGroupID})`
-        resetColorButton.title=`Reset ${colorGroupID} colors to their original color`
+        resetColorButton.title = `Reset ${colorGroupID} colors to their original color`
         td = document.createElement("td")
         td.appendChild(resetColorButton)
         colorModTableResetHueButtonRow.appendChild(td)
         resetColorButtons.push(resetColorButton);
-        
+
         let randomizeColorButton = document.createElement("button");
         randomizeColorButton.innerHTML = `Randomize Colors (${colorGroupID})`
-        randomizeColorButton.title=`Randomize Saturation, Brightness and Hue of ${colorGroupID} colors`
+        randomizeColorButton.title = `Randomize Saturation, Brightness and Hue of ${colorGroupID} colors`
         td = document.createElement("td")
         td.appendChild(randomizeColorButton)
         colorModTableRandomizeColorButtonRow.appendChild(td)
         randomizeColorButtons.push(randomizeColorButton)
-        
+
         let randomizeHueButton = document.createElement("button");
         randomizeHueButton.innerHTML = `Randomize Hues (${colorGroupID})`
-        randomizeHueButton.title=`Randomize Hue of ${colorGroupID} colors (keep saturation and brightness as is)`
+        randomizeHueButton.title = `Randomize Hue of ${colorGroupID} colors (keep saturation and brightness as is)`
         td = document.createElement("td")
         td.appendChild(randomizeHueButton)
         colorModTableRandomizeHueButtonRow.appendChild(td)
@@ -242,8 +226,9 @@ function loadValues() {
     let creatureColors = [];
     let defaultCreatureColors = [];
     let currentCreatureColors = [];
+    let colorPalette = defaultPalettes[0];
 
-    colors.forEach(value => {
+    colorPalette.colors.forEach(value => {
         if (!!value) {
             creatureColors.push({ color: value });
             defaultCreatureColors.push(value)
@@ -251,8 +236,8 @@ function loadValues() {
         }
     });
 
-    for (let i = 0; i < creatureImages.length; i++) {
-        let table = creatureImages[i];
+    for (let i = 0; i < animation.length; i++) {
+        let table = animation[i];
         for (let y = 0; y < table.length; y++) {
             for (let x = 0; x < table[y].length; x++) {
                 for (let color of creatureColors) {
@@ -294,7 +279,43 @@ function loadValues() {
     }
 
     // let creature = new Creature(creatureImages, creatureColors, defaultCreatureColors, canvas, ctx, colorGroupAIndices, creatureTableRows, yamlOptionName, backgroundColorInCanvas, textarea, resetSliders, colorModifiers);
-    let creature = new Creature(creatureImages, creatureColors, defaultCreatureColors, canvas, ctx, colorGroups, creatureTableRows, yamlOptionName, backgroundColorInCanvas, textarea, resetSliders, mainColorsPerGroup, firstColorIndexInYamlOption, maxPixelSize);
+    let creature = new Creature(animation, creatureColors, defaultCreatureColors, canvas, ctx, colorGroups, creatureTableRows, yamlOptionName, backgroundColorInCanvas, textarea, resetSliders, mainColorsPerGroup, firstColorIndexInYamlOption, maxPixelSize);
+
+
+    animationDropDown.addEventListener("change", () => {
+        let selectedAnimation = animations.find(it => it.animationName == animationDropDown.value);
+        let maxPixelHeight = 0;
+        let maxPixelWidth = 0;
+        let animation = animations[0].animationImages;
+        for (let image of animation) {
+            let pixelHeight = image.length;
+            let pixelWidth = image.length > 0 ? image[0].length : 0;
+            maxPixelHeight = Math.max(maxPixelHeight, pixelHeight);
+            maxPixelWidth = Math.max(maxPixelWidth, pixelWidth);
+        }
+
+        let maxPixelSizeByHeight = Math.floor((canvas.height - 40) / maxPixelHeight);
+        let maxPixelSizeByWidth = Math.floor((canvas.width - 40) / maxPixelWidth);
+        maxPixelSize = Math.min(maxPixelSizeByHeight, maxPixelSizeByWidth);
+
+        creature.updateAnimation(selectedAnimation.animationImages);
+        creature.updateMaxPixelSize(maxPixelSize);
+
+    })
+
+    defaultPaletteDropdown.addEventListener("change", () => {
+        let selectedPalette = defaultPalettes.find(it => it.name == defaultPaletteDropdown.value);
+        defaultCreatureColors = [];
+        selectedPalette.colors.forEach(value => {
+            if (!!value) {
+                defaultCreatureColors.push(value)
+            }
+        });
+        creature.setDefaultColors(defaultCreatureColors)
+    })
+
+
+
 
     for (let i = 0; i < creatureTableRows.length; i++) {
         creatureTableRows[i].input.addEventListener("input", () => { creature.draw() });
@@ -309,7 +330,7 @@ function loadValues() {
         if (colorGroupIndex === hueSliders.length - 1) {
             hueSlider.addEventListener("input", () => { creature.setAllColorsRelativeHue(Number.parseInt(hueSlider.value)) })
         } else {
-            hueSlider.addEventListener("input", () => { creature.setColorGroupRelativeHues(Number.parseInt(hueSlider.value), colorGroupIndex ) })
+            hueSlider.addEventListener("input", () => { creature.setColorGroupRelativeHues(Number.parseInt(hueSlider.value), colorGroupIndex) })
         }
         hueSlider.addEventListener("change", () => { creature.saveCurrentColors() })
 
@@ -317,7 +338,7 @@ function loadValues() {
         if (colorGroupIndex === saturationSliders.length - 1) {
             saturationSlider.addEventListener("input", () => { creature.changeAllSaturation(Number.parseFloat(saturationSlider.value / 100)) })
         } else {
-            saturationSlider.addEventListener("input", () => { creature.setColorGroupRelativeSaturation(Number.parseFloat(saturationSlider.value / 100), colorGroupIndex ) })
+            saturationSlider.addEventListener("input", () => { creature.setColorGroupRelativeSaturation(Number.parseFloat(saturationSlider.value / 100), colorGroupIndex) })
         }
         saturationSlider.addEventListener("change", () => { creature.saveCurrentColors() })
 
@@ -325,7 +346,7 @@ function loadValues() {
         if (colorGroupIndex === brightnessSliders.length - 1) {
             brightnessSlider.addEventListener("input", () => { creature.changeAllBrightness(Number.parseFloat(brightnessSlider.value / 100)) })
         } else {
-            brightnessSlider.addEventListener("input", () => { creature.setColorGroupRelativeBrightness(Number.parseFloat(brightnessSlider.value / 100), colorGroupIndex ) })
+            brightnessSlider.addEventListener("input", () => { creature.setColorGroupRelativeBrightness(Number.parseFloat(brightnessSlider.value / 100), colorGroupIndex) })
         }
         brightnessSlider.addEventListener("change", () => { creature.saveCurrentColors() })
 
@@ -337,17 +358,17 @@ function loadValues() {
         if (colorGroupIndex === colorGroups.length - 1) {
             randomizeColorButton.addEventListener("click", () => { creature.randomizeAllColorQualities() });
         } else {
-            randomizeColorButton.addEventListener("click", () => {creature.randomizeGroupColorQualities(colorGroupIndex)});
+            randomizeColorButton.addEventListener("click", () => { creature.randomizeGroupColorQualities(colorGroupIndex) });
         }
         let randomizeHueButton = randomizeHueButtons[colorGroupIndex];
         if (colorGroupIndex === colorGroups.length - 1) {
-            randomizeHueButton.addEventListener("click", () => {creature.randomizeHues()});
+            randomizeHueButton.addEventListener("click", () => { creature.randomizeHues() });
         } else {
-            randomizeHueButton.addEventListener("click", () => {creature.randomizeHueOfGroup(colorGroupIndex)});
+            randomizeHueButton.addEventListener("click", () => { creature.randomizeHueOfGroup(colorGroupIndex) });
         }
     }
 
-    pixelSizeSlider.max=`${maxPixelSize}`
+    pixelSizeSlider.max = `${maxPixelSize}`
     pixelSizeSlider.addEventListener("input", () => { creature.setPixelSize(pixelSizeSlider.value) })
 
 
@@ -359,7 +380,7 @@ function loadValues() {
     saveGifButton.addEventListener("click", () => { creature.saveGif(maxPixelSize) })
 
 
-    
+
 
     resetSliders();
 

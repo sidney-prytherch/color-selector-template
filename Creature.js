@@ -46,6 +46,11 @@ class Creature {
         // this.startAnimation();
     }
 
+    setDefaultColors(defaultColors) {
+        this.defaultColors = defaultColors;
+        this.resetAllColorsToDefault();
+    }
+
     setPixelSize(newPixelSize) {
         this.pixelSize = newPixelSize;
         this.draw();
@@ -158,6 +163,14 @@ class Creature {
 
     setColorGroupBRelativeBrightness(brightnessDegree) {
         setColorGroupRelativeBrightness(brightnessDegree, 1)
+    }
+
+    updateAnimation(animation) {
+        this.animationImages = animation;
+    }
+
+    updateMaxPixelSize(maxPixelSize) {
+        this.maxPixelSize = maxPixelSize;
     }
 
     randomizeHues() {

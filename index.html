@@ -23,6 +23,8 @@
                     <button id="randomizeCreatureColors">
                         <h3>Randomize Hues</h3>
                     </button>
+                    <select id="animation-dropdown"></select>
+                    <select id="default-palette-dropdown"></select>
                 </div>
             </div>
             <table id="colorHexTable">
@@ -32,7 +34,7 @@
                 <span id="span-instructions"></span>
                 <label for="pixelSizeSlider">Change Image Size:</label>
                 <input class="slider" id="pixelSizeSlider" type="range" min="1" max="20" value="10" />
-                <div class="container row">
+                <div class="container row" style="display:none;">
 
                     <button id="saveGif">Save as video (webm)</button>
                     <span>(you can create a gif from a webm with a
