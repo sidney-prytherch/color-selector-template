@@ -173,6 +173,14 @@ class Creature {
         this.maxPixelSize = maxPixelSize;
     }
 
+    updateCtx(ctx) {
+        this.ctx = ctx;
+    }
+
+    updateCanvas(canvas) {
+        this.canvas = canvas;
+    }
+
     randomizeHues() {
         for (let colorGroupIndex = 0; colorGroupIndex < this.colorGroups.length - 1; colorGroupIndex++) {
             let randomHueDegree = Math.random() * 360;

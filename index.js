@@ -15,6 +15,7 @@ function loadValues() {
     let ctx = canvas.getContext("2d");
     let textarea = document.getElementById("textarea")
     let pixelSizeSlider = document.getElementById("pixelSizeSlider")
+    let canvasSizeSlider = document.getElementById("canvasSizeSlider")
     let colorHexTable = document.getElementById("colorHexTable");
     let saveGifButton = document.getElementById("saveGif");
     let randomizeCreatureEverythingButton = document.getElementById("randomizeCreatureEverything")
@@ -370,6 +371,37 @@ function loadValues() {
 
     pixelSizeSlider.max = `${maxPixelSize}`
     pixelSizeSlider.addEventListener("input", () => { creature.setPixelSize(pixelSizeSlider.value) })
+
+    canvasSizeSlider.addEventListener("change", () => {
+        canvas.height = canvasSizeSlider.value
+        canvas.width = canvasSizeSlider.value
+        let ctx = canvas.getContext("2d");
+
+        let selectedAnimation = animations.find(it => it.animationName == animationDropDown.value);
+        let maxPixelHeight = 0;
+        let maxPixelWidth = 0;
+        let animation = animations[0].animationImages;
+        for (let image of animation) {
+            let pixelHeight = image.length;
+            let pixelWidth = image.length > 0 ? image[0].length : 0;
+            maxPixelHeight = Math.max(maxPixelHeight, pixelHeight);
+            maxPixelWidth = Math.max(maxPixelWidth, pixelWidth);
+        }
+
+        let maxPixelSizeByHeight = Math.floor((canvas.height - 40) / maxPixelHeight);
+        let maxPixelSizeByWidth = Math.floor((canvas.width - 40) / maxPixelWidth);
+        maxPixelSize = Math.min(maxPixelSizeByHeight, maxPixelSizeByWidth);
+
+        pixelSizeSlider.max = `${maxPixelSize}`
+        pixelSizeSlider.value = `${Math.min(maxPixelSize, pixelSizeSlider.value )}`
+        creature.setPixelSize(pixelSizeSlider.value)
+
+
+        creature.updateAnimation(selectedAnimation.animationImages);
+        creature.updateMaxPixelSize(maxPixelSize);
+        creature.updateCtx(ctx)
+        creature.updateCanvas(canvas)
+    })
 
 
 
