@@ -62,7 +62,7 @@ let mainTieColorIndex = 5;
 
 let colorGroups = [furColorGroupIndices, skinColorGroupIndices, tieColorGroupIndices]
 let mainColorsPerGroup = [mainFurColorIndex, mainSkinColorIndex, mainTieColorIndex]
-let colorGroupNames = ["Fur", "Skin", "Tie"]
+let colorGroupNames = ["Fur", "Skin", "Tie/Mouth"]
 
 
 let image_dk_01 = [
