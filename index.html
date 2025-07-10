@@ -15,26 +15,21 @@
     <div class="container">
         <div class="row container">
             <div class="container">
-                <canvas id="creatureCanvas" height="420" width="460"></canvas>
+                <canvas id="creatureCanvas" height="600" width="600"></canvas>
                 <div class="horizontal container center">
-                    <button width="480" id="randomizeCreatureEverything">
+                    <button id="randomizeCreatureEverything">
                         <h3>Randomize Colors</h3>
                     </button>
-                    <button width="480" id="randomizeCreatureColors">
+                    <button id="randomizeCreatureColors">
                         <h3>Randomize Hues</h3>
                     </button>
-                    <div>
-                        <button id="uniformColorGroupAHues" title="Set all GroupA colors to the same hue">Uniform GroupA Hues</button>
-                        <button id="uniformColorGroupBHues" title="Set all GroupB colors to the same hue">Uniform GroupB Hues</button>
-                        <button id="chaosCreatureButton" title="Reverse brightness or saturation or hue of one or both color groups">?</button>
-                    </div>
                 </div>
             </div>
-            <table id="table">
+            <table id="colorHexTable">
             </table>
             <div class="container">
                 </br>
-                <span>Click [INSERT NAME] to pause/continue animation</span>
+                <span id="span-instructions"></span>
                 <label for="pixelSizeSlider">Change Image Size:</label>
                 <input class="slider" id="pixelSizeSlider" type="range" min="1" max="20" value="10" />
                 <div class="container row">
@@ -44,7 +39,7 @@
                         convertor)</span>
                 </div>
                 <textarea id="textarea" disabled="true" rows="16" value=""></textarea>
-                <p><em><b>[ADDITIONAL INFO]</b></em></p>
+                <p><em><b id="additional-info"></b></em></p>
 
             </div>
 
@@ -52,57 +47,7 @@
         <div>
 
 
-            <table>
-                <tr>
-                    <th></th>
-                    <th>GroupA Color</th>
-                    <th>GroupB Color</th>
-                    <th>All Colors</th>
-                </tr>
-                <tr>
-                    <td>Hue Sliders:</td>
-                    <td><input class="slider slider-hue" id="colorGroupASlider" type="range" min="-180"
-                            max="180" /></td>
-                    <td><input class="slider slider-hue" id="colorGroupBSlider" type="range" min="-180"
-                            max="180" /></td>
-                    <td><input class="slider slider-hue" id="hueSlider" type="range" min="-180" max="180" /></td>
-                </tr>
-                <tr>
-                    <td>Saturation Sliders:</td>
-                    <td><input class="slider slider-saturation" id="saturationcolorGroupASlider" type="range"
-                            min="-1" max="1" step=".01" /></td>
-                    <td><input class="slider slider-saturation" id="saturationcolorGroupBSlider" type="range"
-                            min="-1" max="1" step=".01" /></td>
-                    <td><input class="slider slider-saturation" id="saturationSlider" type="range" min="-1" max="1"
-                            step=".01" /></td>
-                </tr>
-                <tr>
-                    <td>Brightness Sliders:</td>
-                    <td><input class="slider slider-brightness" id="brightnesscolorGroupASlider" type="range"
-                            min="-1" max="1" step=".01" /></td>
-                    <td><input class="slider slider-brightness" id="brightnesscolorGroupBSlider" type="range"
-                            min="-1" max="1" step=".01" /></td>
-                    <td><input class="slider slider-brightness" id="brightnessSlider" type="range" min="-1" max="1"
-                            step=".01" /></td>
-                </tr>
-                <tr>
-                    <td>Randomize Colors:</td>
-                    <td><button id="randomizeColorGroupAColors" title="Randomize Saturation, Brightness and Hue of all GroupA colors">Randomize Colors (GroupA)</button></td>
-                    <td><button id="randomizeColorGroupBColors" title="Randomize Saturation, Brightness and Hue of all GroupB colors">Randomize Colors (GroupB)</button></td>
-                    <td><button id="randomizeCreatureColorsTable" title="Randomize Saturation, Brightness and Hue of all colors">Randomize All Colors</button></td>
-                </tr>
-                <tr>
-                    <td>Randomize Hues:</td>
-                    <td><button id="randomizeColorGroupAHues" title="Randomize Hue of all GroupA colors (keep saturation and brightness as is)">Randomize Hues (GroupA)</button></td>
-                    <td><button id="randomizeColorGroupBHues" title="Randomize Hue of all GroupB colors (keep saturation and brightness as is)">Randomize Hues (GroupB)</button></td>
-                    <td><button id="randomizeHues" title="Randomize Hue of all colors (keep saturation and brightness as is)">Randomize All Hues</button></td>
-                </tr>
-                <tr>
-                    <td>Reset Colors:</td>
-                    <td><button id="resetColorGroupAColors">Reset GroupA Colors</button></td>
-                    <td><button id="resetColorGroupBColors">Reset GroupB Colors</button></td>
-                    <td><button id="resetCreatureColors">Reset All Colors</button></td>
-                </tr>
+            <table id="color-modding-table">
             </table>
 
 

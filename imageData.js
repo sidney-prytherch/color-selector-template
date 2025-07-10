@@ -1,20 +1,39 @@
+let backgroundColorInCanvas = "#d6eaf2"
+let yamlOptionName = 'creature_flavor'
+let firstColorIndexInYamlOption = 1;
+let characterName = "Kirby"
+let additionalInfoOrInstructions = "";
+
 let colors = [
-    "#B01810", //1
-    "#F0E0E8", //10 body -> 7
-    "#C8A0A8", //14
-    "#A87070", //2
-    "#E02018", //3
-    "#F0A0B8", //8 body -> 11
-    "#D07880", //6
-    "#A85048", //13
-    "#E8D0D0", //11 body -> 14
-    "#E85048", //4 
-    "#D0C0C0", //12 body -> 2
-    "#B08888", //15
-    "#E87880", //7
-    "#F8F8F8", //9 body -> 5
-    "#B03830", //5
+    "#B01810", // 0
+    "#F0E0E8", // 1 - color group A
+    "#C8A0A8", // 2
+    "#A87070", // 3
+    "#E02018", // 4
+    "#F0A0B8", // 5 - color group A
+    "#D07880", // 6
+    "#A85048", // 7
+    "#E8D0D0", // 8 - color group A - main color
+    "#E85048", // 9
+    "#D0C0C0", // 10 - color group A
+    "#B08888", // 11
+    "#E87880", // 12
+    "#F8F8F8", // 13 - color group A
+    "#B03830", // 14
 ]
+
+// define more color groups if necessary - don't forget to add "colorGroupCIndices", "mainColorOfGroupC" and add them to "colorGroups" and "mainColorsPerGroup" - you can add any amount
+let colorGroupAIndices = [13, 10, 8, 5, 1];
+let colorGroupBIndices = [0, 2, 3, 4, 6, 7, 9, 11, 12, 14];
+//let colorGroupCIndices = [...]
+
+let mainColorOfGroupA = 8;
+let mainColorOfGroupB = 0;
+//let mainColorOfGroupC = ...;
+
+let colorGroups = [colorGroupAIndices, colorGroupBIndices /*, colorGroupCIndices, etc...  */]
+let mainColorsPerGroup = [mainColorOfGroupA, mainColorOfGroupB /*, mainColorOfGroupC, etc...  */]
+
 
 let image0 = [
     [undefined,  undefined,  undefined,  undefined,  undefined,  undefined,  undefined,  colors[2],  colors[2],  colors[2],  colors[2],  colors[2],  colors[2],  undefined,  undefined,  undefined,  undefined,  undefined,  undefined,  undefined,  undefined,],
@@ -128,4 +147,3 @@ let image4 = [
 let creatureImages = [image2, image3, image4, image3, image2, image1, image0, image1];
 
 // colors in the colors array are part of color group A, selected by index in colors array:
-let colorGroupAIndices = [13, 10, 8, 5, 1];

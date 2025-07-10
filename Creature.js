@@ -1,6 +1,23 @@
 class Creature {
 
-    constructor(animationImages, colorObjects, defaultColors, canvas, context, colorGroupAIndices, tableRows, yamlKey, backgroundColor, textarea, resetSliders, randomizationModifiers) {
+    /**
+     * 
+     * @param {String[][][]} animationImages - array of images, where each image is a 2D array of colors
+     * @param {{ color: String }[]} colorObjects - array of colors as Color Object
+     * @param {{ color: String }[]} defaultColors - array of default colors as Color Object
+     * @param {HTMLCanvasElement} canvas 
+     * @param {*} context 
+     * @param {Number[][]} colorsGroups - array of color groups, where each color group is a list of indices of the colors array
+     * @param {{color: String, input: HTMLInputElement, span: HTMLSpanElement, colorIndex: Number}[]} tableRows - 
+     * @param {String} yamlKey 
+     * @param {String} backgroundColor - string as hex with #
+     * @param {HTMLTextAreaElement} textarea 
+     * @param {() => {}} resetSliders 
+     * @param {Number[]} mainColorsPerGroup - index of the main color for each group, following order of colorGroups
+     * @param {Number} firstColorIndex - in the yaml, the first color has this index
+     * @param {Number} maxPixelSize - max pixel size
+     */
+    constructor(animationImages, colorObjects, defaultColors, canvas, context, colorGroups, tableRows, yamlKey, backgroundColor, textarea, resetSliders, mainColorsPerGroup, firstColorIndex, maxPixelSize) {
         this.animationMSPerFrame = 100;
         this.colorObjects = colorObjects;
         this.canvas = canvas;
@@ -10,7 +27,8 @@ class Creature {
         this.currentImageIndex = 0;
         this.animationImages = animationImages;
         this.tableRows = tableRows;
-        this.colorGroupAIndices = colorGroupAIndices;
+        // this.colorGroupAIndices = colorGroupAIndices;
+        this.colorGroups = colorGroups;
         this.yamlKey = yamlKey;
         this.isAnimating = false;
         this.animationInterval = null;
@@ -21,7 +39,9 @@ class Creature {
         this.recordedChunks = null;
         this.gifFrame = -1;
         this.resetSliders = resetSliders;
-        this.randomizationModifiers = randomizationModifiers;
+        this.mainColorsPerGroup = mainColorsPerGroup;
+        this.firstColorIndex = firstColorIndex;
+        this.maxPixelSize = maxPixelSize;
 
         // this.startAnimation();
     }
@@ -32,152 +52,132 @@ class Creature {
     }
 
     saveCurrentColors() {
-        for (let i = 0; i < this.tableRows.length; i++) {
-            this.currentColors[i] = this.tableRows[i].input.value
+        for (let colorData of this.tableRows) {
+            this.currentColors[colorData.colorIndex] = colorData.input.value
         }
         this.resetSliders();
     }
 
-    setAllColorsRelativeHue(newHueInt) {
-        // let newHueInt = Number.parseInt(hueSlider.value);
-        for (let i = 0; i < this.tableRows.length; i++) {
-            this.tableRows[i].input.value = ColorModifiers.shiftColorHueByDegree(this.currentColors[i], newHueInt)
+    setAllColorsRelativeHue(changeInHue) {
+        for (let colorData of this.tableRows) {
+            colorData.input.value = ColorModifiers.shiftColorHueByDegree(this.currentColors[colorData.colorIndex], changeInHue)
         }
         this.draw();
     }
 
-    changeAllBrightness(newBrightnessValue) {
-        // let newBrightnessValue = Number.parseFloat(brightnessSlider.value);
-        for (let i = 0; i < this.tableRows.length; i++) {
-            this.tableRows[i].input.value = ColorModifiers.shiftColorBrightnessByDegree(this.currentColors[i], newBrightnessValue)
+    changeAllBrightness(changeInBrightness) {
+        for (let colorData of this.tableRows) {
+            colorData.input.value = ColorModifiers.shiftColorBrightnessByDegree(this.currentColors[colorData.colorIndex], changeInBrightness)
         }
         this.draw();
     }
 
-    changeAllSaturation(newSaturationValue) {
-        // let newSaturationValue = Number.parseFloat(saturationSlider.value);
-        for (let i = 0; i < this.tableRows.length; i++) {
-            this.tableRows[i].input.value = ColorModifiers.shiftColorSaturationByDegree(this.currentColors[i], newSaturationValue)
+    changeAllSaturation(changeInSaturation) {
+        for (let colorData of this.tableRows) {
+            colorData.input.value = ColorModifiers.shiftColorSaturationByDegree(this.currentColors[colorData.colorIndex], changeInSaturation)
         }
+        this.draw();
+    }
+
+    uniformHuesOfGroup(colorGroupIndex) {
+        if (colorGroupIndex === this.colorGroups.length - 1) {
+            for (let i = 0; i < this.colorGroups.length - 1; i++) {
+                this.uniformHuesOfGroup(i);
+            }
+            return;
+        }
+        let colorIndex = this.mainColorsPerGroup[colorGroupIndex];
+        let color = this.currentColors[colorIndex];
+        for (let colorData of this.tableRows) {
+            if (this.isColorOfGroup(colorData.colorIndex, colorGroupIndex)) {
+                colorData.input.value = ColorModifiers.setHueFromColor(colorData.input.value, color);
+            }
+        }
+        this.saveCurrentColors();
         this.draw();
     }
 
     uniformColorGroupAHues() {
-        let color = -1;
-        if (this.tableRows.length === 15) {
-            for (let i = 0; i < this.tableRows.length; i++) {
-                if (this.isGroupAColor(i)) {
-                    if (color == -1) {
-                        color = this.currentColors[i]
-                    }
-                    this.tableRows[i].input.value = ColorModifiers.setHueFromColor(this.tableRows[i].input.value, color);
-                }
-            }
-        } else {
-        for (let i = this.tableRows.length - 1; i >= 0; i--) {
-            if (this.isGroupAColor(i)) {
-                if (color == -1) {
-                    color = this.currentColors[i]
-                }
-                this.tableRows[i].input.value = ColorModifiers.setHueFromColor(this.tableRows[i].input.value, color);
-            }
-        }}
-        this.saveCurrentColors()
-        this.draw();
+        this.uniformHuesOfGroup(0)
     }
 
     uniformColorGroupBHues() {
-        let color = -1;
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupBColor(i)) {
-                if (color == -1) {
-                    color = this.currentColors[i]
-                }
-                this.tableRows[i].input.value = ColorModifiers.setHueFromColor(this.tableRows[i].input.value, color)
+        this.uniformHuesOfGroup(1)
+    }
+
+    isColorOfGroup(colorIndex, colorGroupIndex) {
+        return this.colorGroups[colorGroupIndex].includes(colorIndex)
+    }
+
+    setColorGroupRelativeHues(hueDegree, colorGroupIndex) {
+        for (let colorData of this.tableRows) {
+            if (this.isColorOfGroup(colorData.colorIndex, colorGroupIndex)) {
+                colorData.input.value = ColorModifiers.shiftColorHueByDegree(this.currentColors[colorData.colorIndex], hueDegree)
             }
         }
-        this.saveCurrentColors()
         this.draw();
     }
 
-    isGroupAColor(i) {
-        return this.colorGroupAIndices.indexOf(i) !== -1;
+    setColorGroupRelativeBrightness(brightnessDegree, colorGroupIndex) {
+        for (let colorData of this.tableRows) {
+            if (this.isColorOfGroup(colorData.colorIndex, colorGroupIndex)) {
+                colorData.input.value = ColorModifiers.shiftColorBrightnessByDegree(this.currentColors[colorData.colorIndex], brightnessDegree)
+            }
+        }
+        this.draw();
     }
 
-    isGroupBColor(i) {
-        return !this.isGroupAColor(i);
+    setColorGroupRelativeSaturation(saturationDegree, colorGroupIndex) {
+        for (let colorData of this.tableRows) {
+            if (this.isColorOfGroup(colorData.colorIndex, colorGroupIndex)) {
+                colorData.input.value = ColorModifiers.shiftColorSaturationByDegree(this.currentColors[colorData.colorIndex], saturationDegree)
+            }
+        }
+        this.draw();
     }
 
     setColorGroupARelativeHues(hueDegree) {
-        // let hueDegree = Number.parseInt(bodySlider.value);
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupAColor(i)) {
-                this.tableRows[i].input.value = ColorModifiers.shiftColorHueByDegree(this.currentColors[i], hueDegree)
-            }
-        }
-        this.draw();
+        setColorGroupRelativeHues(hueDegree, 0)
     }
 
     setColorGroupARelativeBrightness(brightnessDegree) {
-        // let brightnessDegree = Number.parseFloat(brightnessColorGroupASlider.value);
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupAColor(i)) {
-                this.tableRows[i].input.value = ColorModifiers.shiftColorBrightnessByDegree(this.currentColors[i], brightnessDegree)
-            }
-        }
-        this.draw();
+        setColorGroupRelativeBrightness(brightnessDegree, 0)
     }
 
     setColorGroupARelativeSaturation(saturationDegree) {
-        // let saturationDegree = Number.parseFloat(saturationColorGroupASlider.value);
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupAColor(i)) {
-                this.tableRows[i].input.value = ColorModifiers.shiftColorSaturationByDegree(this.currentColors[i], saturationDegree)
-            }
-        }
-        this.draw();
+        setColorGroupRelativeSaturation(saturationDegree, 0)
     }
 
     setColorGroupBRelativeHue(hueDegree) {
-        // let num = Number.parseInt(feetSlider.value);
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupBColor(i)) {
-                this.tableRows[i].input.value = ColorModifiers.shiftColorHueByDegree(this.currentColors[i], hueDegree)
-            }
-        }
-        this.draw();
+        setColorGroupRelativeHues(hueDegree, 1)
     }
 
-
     setColorGroupBRelativeSaturation(saturationDegree) {
-        // let saturationDegree = Number.parseFloat(saturationColorGroupBSlider.value);
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupBColor(i)) {
-                this.tableRows[i].input.value = ColorModifiers.shiftColorSaturationByDegree(this.currentColors[i], saturationDegree)
-            }
-        }
-        this.draw();
+        setColorGroupRelativeSaturation(saturationDegree, 1)
     }
 
     setColorGroupBRelativeBrightness(brightnessDegree) {
-        // let brightnessDegree = Number.parseFloat(brightnessColorGroupBSlider.value);
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupBColor(i)) {
-                this.tableRows[i].input.value = ColorModifiers.shiftColorBrightnessByDegree(this.currentColors[i], brightnessDegree)
-            }
-        }
-        this.draw();
+        setColorGroupRelativeBrightness(brightnessDegree, 1)
     }
 
-    randomizeColors() {
-        let randomRelativeGroupBColorHueDegree = Math.random() * 360;
-        let randomRelativeGroupAColorHueDegree = Math.random() * 360;
+    randomizeHues() {
+        for (let colorGroupIndex = 0; colorGroupIndex < this.colorGroups.length - 1; colorGroupIndex++) {
+            let randomHueDegree = Math.random() * 360;
+            for (let colorData of this.tableRows) {
+                if (this.isColorOfGroup(colorData.colorIndex, colorGroupIndex)) {
+                    colorData.input.value = ColorModifiers.shiftColorHueByDegree(colorData.input.value, randomHueDegree)
+                }
+            }
+        }
+        this.saveCurrentColors()
+        this.draw()
+    }
 
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupAColor(i)) {
-                this.tableRows[i].input.value = ColorModifiers.shiftColorHueByDegree(this.tableRows[i].input.value, randomRelativeGroupAColorHueDegree)
-            } else {
-                this.tableRows[i].input.value = ColorModifiers.shiftColorHueByDegree(this.tableRows[i].input.value, randomRelativeGroupBColorHueDegree)
+    randomizeHueOfGroup(colorGroupIndex) {
+        let randomHueDegree = Math.random() * 360;
+        for (let colorData of this.tableRows) {
+            if (this.isColorOfGroup(colorData.colorIndex, colorGroupIndex)) {
+                colorData.input.value = ColorModifiers.shiftColorHueByDegree(colorData.input.value, randomHueDegree)
             }
         }
         this.saveCurrentColors()
@@ -185,241 +185,223 @@ class Creature {
     }
 
     randomizeGroupAHues() {
-        let randomRelativeGroupAColorHueDegree = Math.random() * 360;
-
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupAColor(i)) {
-                this.tableRows[i].input.value = ColorModifiers.shiftColorHueByDegree(this.tableRows[i].input.value, randomRelativeGroupAColorHueDegree)
-            }
-        }
-        this.saveCurrentColors()
-        this.draw()
+        randomizeHueOfGroup(0)
     }
 
     randomizeGroupBHues() {
-        let randomRelativeGroupBColorHueDegree = Math.random() * 360;
-
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupBColor(i)) {
-                this.tableRows[i].input.value = ColorModifiers.shiftColorHueByDegree(this.tableRows[i].input.value, randomRelativeGroupBColorHueDegree)
-            }
-        }
-        this.saveCurrentColors()
-        this.draw()
+        randomizeHueOfGroup(1)
     }
 
-    reverseSaturationOfGroupAAndColorGroupB() {
-        for (let i = 0; i < this.tableRows.length; i++) {
-            this.tableRows[i].input.value = ColorModifiers.reverseSaturation(this.tableRows[i].input.value)
+    reverseSaturationOfAllColorGroups() {
+        for (let colorData of this.tableRows) {
+            colorData.input.value = ColorModifiers.reverseSaturation(colorData.input.value)
         }
     }
 
-    reverseColorGroupBSaturation() {
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupBColor(i)) {
-                this.tableRows[i].input.value = ColorModifiers.reverseSaturation(this.tableRows[i].input.value)
+    reverseSaturationOfColorGroup(colorGroupIndex) {
+        for (let colorData of this.tableRows) {
+            if (this.isColorOfGroup(colorData.colorIndex, colorGroupIndex)) {
+                colorData.input.value = ColorModifiers.reverseSaturation(colorData.input.value)
             }
         }
     }
 
     reverseColorGroupASaturation() {
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupAColor(i)) {
-                this.tableRows[i].input.value = ColorModifiers.reverseSaturation(this.tableRows[i].input.value)
-            }
+        reverseSaturationOfColorGroup(0)
+    }
+
+    reverseColorGroupBSaturation() {
+        reverseSaturationOfColorGroup(1)
+    }
+
+    reverseBrightnessOfAllColorGroups() {
+        for (let colorData of this.tableRows) {
+            colorData.input.value = ColorModifiers.reverseBrightness(colorData.input.value)
         }
     }
 
-    reverseBrightnessOfGroupAAndColorGroupB() {
-        for (let i = 0; i < this.tableRows.length; i++) {
-            this.tableRows[i].input.value = ColorModifiers.reverseBrightness(this.tableRows[i].input.value)
-        }
-    }
-
-    reverseColorGroupBBrightness() {
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupBColor(i)) {
-                this.tableRows[i].input.value = ColorModifiers.reverseBrightness(this.tableRows[i].input.value)
+    reverseBrightnessOfColorGroup(colorGroupIndex) {
+        for (let colorData of this.tableRows) {
+            if (this.isColorOfGroup(colorData.colorIndex, colorGroupIndex)) {
+                colorData.input.value = ColorModifiers.reverseBrightness(colorData.input.value)
             }
         }
     }
 
     reverseColorGroupABrightness() {
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupAColor(i)) {
-                this.tableRows[i].input.value = ColorModifiers.reverseBrightness(this.tableRows[i].input.value)
-            }
-        }
+        reverseBrightnessOfColorGroup(0)
+    }
+
+    reverseColorGroupBBrightness() {
+        reverseBrightnessOfColorGroup(1)
     }
 
     chaosButton() {
-        let random = Math.random() * 8;
-        if (random < 1) {
-            this.reverseSaturationOfGroupAAndColorGroupB()
-        }
-        else if (random < 2) {
-            this.reverseBrightnessOfGroupAAndColorGroupB()
-        }
-        else if (random < 3) {
-            this.reverseColorGroupABrightness()
-        }
-        else if (random < 4) {
-            this.reverseColorGroupBBrightness()
-        }
-        else if (random < 5) {
-            this.reverseColorGroupASaturation()
-        }
-        else if (random < 6) {
-            this.reverseColorGroupBSaturation()
-        } else if (random < 8) {
-            this.uniformColorGroupAHues();
-            this.uniformColorGroupBHues();
+        let random = Math.floor(Math.random() * 3 * this.colorGroups.length);
+        if (random % 3 === 0) { //saturation
+            let groupIndex = Math.floor(random / 3)
+            if (groupIndex === this.colorGroups.length - 1) {
+                this.reverseSaturationOfAllColorGroups()
+            } else {
+                this.reverseSaturationOfColorGroup(groupIndex)
+            }
+        } else if (random % 3 === 1) { //brightness
+            let groupIndex = Math.floor(random / 3)
+            if (groupIndex === this.colorGroups.length - 1) {
+                this.reverseBrightnessOfAllColorGroups()
+            } else {
+                this.reverseBrightnessOfColorGroup(groupIndex)
+            }
+
+        } else { //hues, but do all color groups
+            for (let groupIndex = 0; groupIndex < this.colorGroups.length; groupIndex++) {
+                this.uniformHuesOfGroup(groupIndex)
+            }
         }
         this.saveCurrentColors()
         this.draw()
     }
 
     randomizeAllColorQualities() {
-        let randomReset = Math.random() * 10;
-        if (randomReset < 7) {
-            this.resetAllColorsToDefault()
-        } else if (randomReset < 8) {
-            this.resetColorGroupAToDefault()
-        } else if (randomReset < 9) {
-            this.resetColorGroupBToDefault()
+        let probabilityOfResettingAnyColors = .9
+        if (Math.random() < probabilityOfResettingAnyColors) {
+            let probabilityOfResettingAllColors = .9
+            if (Math.random() < probabilityOfResettingAllColors) {
+                this.resetAllColorsToDefault()
+            } else {
+                let colorGroupIndex = Math.floor(Math.random() * (this.colorGroups.length - 1))
+                this.resetColorGroupToDefault(colorGroupIndex)
+            }
         }
 
+        for (let colorGroupIndex = 0; colorGroupIndex < this.colorGroups.length - 1; colorGroupIndex++) {
+            let randomHueDegree = Math.random() * 360;
 
-        let randomColorGroupBHueDegree = Math.random() * 360;
-        let randomColorGroupAHueDegree = Math.random() * 360;
-        let randomColorGroupBSaturation = Math.random() * this.randomizationModifiers.saturationGroupARange + this.randomizationModifiers.saturationGroupAStart; 
-        let randomColorGroupASaturation = Math.random() * this.randomizationModifiers.saturationGroupBRange + this.randomizationModifiers.saturationGroupBStart;
-        let randomColorGroupABrightness = Math.random() * this.randomizationModifiers.brightnessGroupARange + this.randomizationModifiers.brightnessGroupAStart;
-        let randomColorGroupBBrightness = Math.min(Math.random() * this.randomizationModifiers.brightnessGroupBRange + this.randomizationModifiers.brightnessGroupBStart, randomColorGroupABrightness);
+            // let saturationPercentChange = ((Math.random() < .5 ? 1 : -1) * Math.random());
+            // let brightnessPercentChange = ((Math.random() < .5 ? 1 : -1) * Math.random());
 
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupBColor(i)) {
-                this.tableRows[i].input.value = ColorModifiers.shiftColorBrightnessByDegree(this.tableRows[i].input.value, randomColorGroupBBrightness)
-                this.tableRows[i].input.value = ColorModifiers.shiftColorSaturationByDegree(this.tableRows[i].input.value, randomColorGroupBSaturation)
-                this.tableRows[i].input.value = ColorModifiers.shiftColorHueByDegree(this.tableRows[i].input.value, randomColorGroupBHueDegree)
-            } else {
-                this.tableRows[i].input.value = ColorModifiers.shiftColorBrightnessByDegree(this.tableRows[i].input.value, randomColorGroupABrightness)
-                this.tableRows[i].input.value = ColorModifiers.shiftColorSaturationByDegree(this.tableRows[i].input.value, randomColorGroupASaturation)
-                this.tableRows[i].input.value = ColorModifiers.shiftColorHueByDegree(this.tableRows[i].input.value, randomColorGroupAHueDegree)
+            let saturationPercentChange = 8 * Math.pow(Math.random() - .5, 3)
+            let brightnessPercentChange = 8 * Math.pow(Math.random() - .5, 3)
+
+            // let saturationRange =  this.randomizationModifiers[colorGroupIndex].maxSaturationChange - this.randomizationModifiers[colorGroupIndex].minSaturationChange;
+            // let randomSaturationChange = Math.random() * saturationRange + this.randomizationModifiers[colorGroupIndex].minSaturationChange;
+            // let brightnessRange =  this.randomizationModifiers[colorGroupIndex].maxBrightnessChange - this.randomizationModifiers[colorGroupIndex].minBrightnessChange;
+            // let randomBrightnessChange = Math.random() * brightnessRange + this.randomizationModifiers[colorGroupIndex].minBrightnessChange;
+
+            for (let colorData of this.tableRows) {
+                if (this.isColorOfGroup(colorData.colorIndex, colorGroupIndex)) {
+                    let currentSaturation = ColorModifiers.getAverageSaturation([colorData.input.value])
+                    let newSaturation = (saturationPercentChange < 0) ? currentSaturation * (1 + saturationPercentChange) :
+                        saturationPercentChange * (1 - currentSaturation) + currentSaturation
+                    let currentBrightness = ColorModifiers.getAverageBrightness([colorData.input.value])
+                    let newBrightness = (brightnessPercentChange < 0) ? currentBrightness * (1 + brightnessPercentChange) :
+                        brightnessPercentChange * (1 - currentBrightness) + currentBrightness
+                    colorData.input.value = ColorModifiers.setBrightness(colorData.input.value, newBrightness)
+                    colorData.input.value = ColorModifiers.setSaturation(colorData.input.value, newSaturation)
+                    colorData.input.value = ColorModifiers.shiftColorHueByDegree(colorData.input.value, randomHueDegree)
+
+                }
+
             }
         }
         this.saveCurrentColors()
 
-        let randomUniform = Math.random() * 10;
-        if (this.tableRows.length === 15 && randomUniform < 9) {
-            this.tableRows[1].input.value = ColorModifiers.shiftColorSaturationByDegree(ColorModifiers.shiftColorBrightnessByDegree(this.tableRows[13].input.value, Math.random() * .3 - .05), Math.random() * .3 - .05)
-            if (randomUniform < 3) {
-                this.uniformColorGroupAHues()
-            } else if (randomUniform < 6) {
-                this.tableRows[1].input.value = ColorModifiers.setHueFromColor(this.tableRows[13].input.value, this.tableRows[1].input.value)
-            }
-            this.saveCurrentColors()
+        // let probabilityOfUniformingHues = .9;
+        // if (Math.random() < probabilityOfUniformingHues) {
+
+        // }
+
+        // let randomUniform = Math.random() * 10;
+        // if (this.tableRows.length === 15 && randomUniform < 9) {
+        //     this.tableRows[1].input.value = ColorModifiers.shiftColorSaturationByDegree(ColorModifiers.shiftColorBrightnessByDegree(this.tableRows[13].input.value, Math.random() * .3 - .05), Math.random() * .3 - .05)
+        //     if (randomUniform < 3) {
+        //         this.uniformColorGroupAHues()
+        //     } else if (randomUniform < 6) {
+        //         this.tableRows[1].input.value = ColorModifiers.setHueFromColor(this.tableRows[13].input.value, this.tableRows[1].input.value)
+        //     }
+        //     this.saveCurrentColors()
+        // }
+        // if (this.tableRows.length === 9 && randomUniform < 9) {
+        //     this.tableRows[0].input.value = ColorModifiers.shiftColorSaturationByDegree(ColorModifiers.shiftColorBrightnessByDegree(this.tableRows[1].input.value, Math.random() * .15 - .18), Math.random() * .25 - .28)
+        //     if (randomUniform < 3) {
+        //         this.uniformColorGroupAHues()
+        //     } else if (randomUniform < 8) {
+        //         this.tableRows[0].input.value = ColorModifiers.setHueFromColor(this.tableRows[1].input.value, this.tableRows[0].input.value)
+        //     }
+        //     this.saveCurrentColors()
+        // }
+        this.draw()
+    }
+
+    randomizeGroupColorQualities(colorGroupIndex) {
+        let probabilityOfResettingColors = .8
+        if (Math.random() < probabilityOfResettingColors) {
+            this.resetColorGroupToDefault(colorGroupIndex)
         }
-        if (this.tableRows.length === 9 && randomUniform < 9) {
-            this.tableRows[0].input.value = ColorModifiers.shiftColorSaturationByDegree(ColorModifiers.shiftColorBrightnessByDegree(this.tableRows[1].input.value, Math.random() * .15 - .18), Math.random() * .25 - .28)
-            if (randomUniform < 3) {
-                this.uniformColorGroupAHues()
-            } else if (randomUniform < 8) {
-                this.tableRows[0].input.value = ColorModifiers.setHueFromColor(this.tableRows[1].input.value, this.tableRows[0].input.value)
+        let randomHueDegree = Math.random() * 360;
+        let saturationPercentChange = 8 * Math.pow(Math.random() - .5, 3)
+        let brightnessPercentChange = 8 * Math.pow(Math.random() - .5, 3)
+        for (let colorData of this.tableRows) {
+            if (this.isColorOfGroup(colorData.colorIndex, colorGroupIndex)) {
+                    let currentSaturation = ColorModifiers.getAverageSaturation([colorData.input.value])
+                    let newSaturation = (saturationPercentChange < 0) ? currentSaturation * (1 + saturationPercentChange) :
+                        saturationPercentChange * (1 - currentSaturation) + currentSaturation
+                    let currentBrightness = ColorModifiers.getAverageBrightness([colorData.input.value])
+                    let newBrightness = (brightnessPercentChange < 0) ? currentBrightness * (1 + brightnessPercentChange) :
+                        brightnessPercentChange * (1 - currentBrightness) + currentBrightness
+                    colorData.input.value = ColorModifiers.setBrightness(colorData.input.value, newBrightness)
+                    colorData.input.value = ColorModifiers.setSaturation(colorData.input.value, newSaturation)
+                    colorData.input.value = ColorModifiers.shiftColorHueByDegree(colorData.input.value, randomHueDegree)
+
             }
-            this.saveCurrentColors()
         }
+        this.saveCurrentColors()
+
+        // let randomUniform = Math.random() * 10;
+        // if (this.tableRows.length === 15 && randomUniform < 9) {
+        //     this.tableRows[1].input.value = ColorModifiers.shiftColorSaturationByDegree(ColorModifiers.shiftColorBrightnessByDegree(this.tableRows[13].input.value, Math.random() * .3 - .05), Math.random() * .3 - .05)
+        //     if (randomUniform < 3) {
+        //         this.uniformColorGroupAHues()
+        //     } else if (randomUniform < 6) {
+        //         this.tableRows[1].input.value = ColorModifiers.setHueFromColor(this.tableRows[13].input.value, this.tableRows[1].input.value)
+        //     }
+        //     this.saveCurrentColors()
+        // }
+        // if (this.tableRows.length === 9 && randomUniform < 9) {
+        //     this.tableRows[0].input.value = ColorModifiers.shiftColorSaturationByDegree(ColorModifiers.shiftColorBrightnessByDegree(this.tableRows[1].input.value, Math.random() * .15 - .18), Math.random() * .25 - .28)
+        //     if (randomUniform < 3) {
+        //         this.uniformColorGroupAHues()
+        //     } else if (randomUniform < 8) {
+        //         this.tableRows[0].input.value = ColorModifiers.setHueFromColor(this.tableRows[1].input.value, this.tableRows[0].input.value)
+        //     }
+        //     this.saveCurrentColors()
+        // }
         this.draw()
     }
 
     randomizeGroupAColorQualities() {
-        let randomReset = Math.random() * 10;
-        if (randomReset < 8) {
-            this.resetColorGroupAToDefault()
-        }
-
-        let randomColorGroupAHueDegree = Math.random() * 360;
-        let randomColorGroupASaturation = Math.random() * this.randomizationModifiers.saturationGroupBRange + this.randomizationModifiers.saturationGroupBStart;
-        let randomColorGroupABrightness = Math.random() * this.randomizationModifiers.brightnessGroupARange + this.randomizationModifiers.brightnessGroupAStart;
-
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupAColor(i)) {
-                this.tableRows[i].input.value = ColorModifiers.shiftColorBrightnessByDegree(this.tableRows[i].input.value, randomColorGroupABrightness)
-                this.tableRows[i].input.value = ColorModifiers.shiftColorSaturationByDegree(this.tableRows[i].input.value, randomColorGroupASaturation)
-                this.tableRows[i].input.value = ColorModifiers.shiftColorHueByDegree(this.tableRows[i].input.value, randomColorGroupAHueDegree)
-            }
-        }
-        this.saveCurrentColors()
-
-        let randomUniform = Math.random() * 10;
-        if (this.tableRows.length === 15 && randomUniform < 9) {
-            this.tableRows[1].input.value = ColorModifiers.shiftColorSaturationByDegree(ColorModifiers.shiftColorBrightnessByDegree(this.tableRows[13].input.value, Math.random() * .3 - .05), Math.random() * .3 - .05)
-            if (randomUniform < 3) {
-                this.uniformColorGroupAHues()
-            } else if (randomUniform < 6) {
-                this.tableRows[1].input.value = ColorModifiers.setHueFromColor(this.tableRows[13].input.value, this.tableRows[1].input.value)
-            }
-            this.saveCurrentColors()
-        }
-        if (this.tableRows.length === 9 && randomUniform < 9) {
-            this.tableRows[0].input.value = ColorModifiers.shiftColorSaturationByDegree(ColorModifiers.shiftColorBrightnessByDegree(this.tableRows[1].input.value, Math.random() * .15 - .18), Math.random() * .25 - .28)
-            if (randomUniform < 3) {
-                this.uniformColorGroupAHues()
-            } else if (randomUniform < 8) {
-                this.tableRows[0].input.value = ColorModifiers.setHueFromColor(this.tableRows[1].input.value, this.tableRows[0].input.value)
-            }
-            this.saveCurrentColors()
-        }
-        this.draw()
+        this.randomizeGroupColorQualities(0)
     }
 
     randomizeGroupBColorQualities() {
-        let randomReset = Math.random() * 10;
-        if (randomReset < 8) {
-            this.resetColorGroupBToDefault()
-        }
-
-        let randomColorGroupBHueDegree = Math.random() * 360;
-        let randomColorGroupBSaturation = Math.random() * this.randomizationModifiers.saturationGroupARange + this.randomizationModifiers.saturationGroupAStart; 
-        let randomColorGroupBBrightness = Math.random() * this.randomizationModifiers.brightnessGroupBRange + this.randomizationModifiers.brightnessGroupBStart;
-
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupBColor(i)) {
-                this.tableRows[i].input.value = ColorModifiers.shiftColorBrightnessByDegree(this.tableRows[i].input.value, randomColorGroupBBrightness)
-                this.tableRows[i].input.value = ColorModifiers.shiftColorSaturationByDegree(this.tableRows[i].input.value, randomColorGroupBSaturation)
-                this.tableRows[i].input.value = ColorModifiers.shiftColorHueByDegree(this.tableRows[i].input.value, randomColorGroupBHueDegree)
-            }
-        }
-        this.saveCurrentColors()
-        this.draw()
+        this.randomizeGroupColorQualities(1)
     }
 
     
-
-    resetColorGroupAToDefault() {
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupAColor(i)) {
-                this.tableRows[i].input.value = this.defaultColors[i]
+    resetColorGroupToDefault(colorGroupIndex) {
+        for (let colorData of this.tableRows) {
+            if (this.isColorOfGroup(colorData.colorIndex, colorGroupIndex)) {
+                colorData.input.value = this.defaultColors[colorData.colorIndex]
             }
         }
         this.saveCurrentColors()
         this.draw()
     }
 
-    resetColorGroupBToDefault() {
-        for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.isGroupBColor(i)) {
-                this.tableRows[i].input.value = this.defaultColors[i]
-            }
-        }
-        this.saveCurrentColors()
-        this.draw()
-
-    }
 
     resetAllColorsToDefault() {
-        for (let i = 0; i < this.tableRows.length; i++) {
-            this.tableRows[i].input.value = this.defaultColors[i]
+        for (let colorData of this.tableRows) {
+            colorData.input.value = this.defaultColors[colorData.colorIndex]
         }
         this.saveCurrentColors()
         this.draw()
@@ -432,11 +414,10 @@ class Creature {
 
         this.ctx.fillStyle = this.backgroundColor;
         this.ctx.beginPath(); // Start a new path
-        this.ctx.rect(0, 0, 500, 500); // Add a rectangle to the current path
+        this.ctx.rect(0, 0, this.canvas.width, this.canvas.height); // Add a rectangle to the current path
         this.ctx.fill(); // Render the path
-        let maxPixelSize = (this.tableRows.length === 15) ? 20 : 10
 
-        let topSpace = 20 + (maxPixelSize - this.pixelSize) * currentImage.length
+        let topSpace = 20 + (this.maxPixelSize - this.pixelSize) * currentImage.length
 
         for (let y = 0; y < currentImage.length; y++) {
             for (let x = 0; x < currentImage[y].length; x++) {
@@ -451,15 +432,15 @@ class Creature {
     }
 
     updateColorTableDisplay() {
-        for (let i = 0; i < this.tableRows.length; i++) {
-            this.colorObjects[i].color = this.tableRows[i].input.value;
-            this.tableRows[i].span.innerHTML = `${i + 1}: ${this.tableRows[i].input.value}`;
+        for (let colorData of this.tableRows) {
+            this.colorObjects[colorData.colorIndex].color = colorData.input.value;
+            colorData.span.innerHTML = `${colorData.colorIndex + this.firstColorIndex}: ${colorData.input.value}`;
         }
 
         let string = `  ${this.yamlKey}:`
         // for (let i = this.tableRows.length - 1; i >= 0; i--) {
-            for (let i = 0; i < this.tableRows.length; i++) {
-            string += `\n    '${i + 1}': '${this.tableRows[i].input.value.replace("#", "")}'`
+        for (let colorData of this.tableRows) {
+            string += `\n    '${colorData.colorIndex + this.firstColorIndex}': '${colorData.input.value.replace("#", "")}'`
         }
         this.textarea.value = string;
     }
@@ -470,7 +451,6 @@ class Creature {
             this.draw();
             if (this.gifFrame >= 0) {
                 this.gifFrame++;
-                console.log(this.gifFrame);
                 if (this.gifFrame >= this.animationImages.length + 1) {
                     this.saveGifHelper();
                 }
@@ -505,7 +485,6 @@ class Creature {
 
     saveGifHelper() {
         if (this.gifFrame === -1) {
-            console.log("start")
             this.gifFrame = 0;
             const stream = this.canvas.captureStream(this.animationMSPerFrame);
             this.mediaRecorder = new MediaRecorder(stream, {
@@ -520,7 +499,6 @@ class Creature {
             };
             this.mediaRecorder.start();
         } else {
-            console.log("end")
             this.gifFrame = -1;
             this.mediaRecorder.stop();
             setTimeout(() => {

@@ -5,75 +5,239 @@ window.addEventListener("load", loadValues);
 
 function loadValues() {
 
+    //this will get rewritten automatically now
     let maxPixelSize = 20;
+
+    document.getElementById("span-instructions").innerHTML = `Click ${characterName} to pause/continue animation`
+    document.getElementById("additional-info").innerHTML = `${additionalInfoOrInstructions}`
 
     let canvas = document.getElementById("creatureCanvas")
     let ctx = canvas.getContext("2d");
     let textarea = document.getElementById("textarea")
-    let hueSlider = document.getElementById("hueSlider")
-    let colorGroupASlider = document.getElementById("colorGroupASlider")
-    let colorGroupBSlider = document.getElementById("colorGroupBSlider")
-    let saturationSlider = document.getElementById("saturationSlider")
-    let saturationColorGroupASlider = document.getElementById("saturationcolorGroupASlider")
-    let saturationColorGroupBSlider = document.getElementById("saturationcolorGroupBSlider")
-    let brightnessSlider = document.getElementById("brightnessSlider")
-    let brightnessColorGroupASlider = document.getElementById("brightnesscolorGroupASlider")
-    let brightnessColorGroupBSlider = document.getElementById("brightnesscolorGroupBSlider")
     let pixelSizeSlider = document.getElementById("pixelSizeSlider")
-    let table = document.getElementById("table");
-    let randomizeCreatureColorsButton = document.getElementById("randomizeCreatureColors");
-    let uniformColorGroupBHuesButton = document.getElementById("uniformColorGroupBHues");
-    let uniformColorGroupAHuesButton = document.getElementById("uniformColorGroupAHues");
-    let chaosCreatureButton = document.getElementById("chaosCreatureButton");
-    let randomizeCreatureEverythingButton = document.getElementById("randomizeCreatureEverything");
-    let resetColorGroupAColorsButton = document.getElementById("resetColorGroupAColors");
-    let resetColorGroupBColorsButton = document.getElementById("resetColorGroupBColors");
-    let resetCreatureColorsButton = document.getElementById("resetCreatureColors");
+    let colorHexTable = document.getElementById("colorHexTable");
     let saveGifButton = document.getElementById("saveGif");
+    let randomizeCreatureEverythingButton = document.getElementById("randomizeCreatureEverything")
 
-    let randomizeColorGroupAColorsButton = document.getElementById("randomizeColorGroupAColors");
-    let randomizeColorGroupBColorsButton = document.getElementById("randomizeColorGroupBColors");
-    let randomizeCreatureColorsTableButton = document.getElementById("randomizeCreatureColorsTable");
-    let randomizeColorGroupAHuesButton = document.getElementById("randomizeColorGroupAHues");
-    let randomizeColorGroupBHuesButton = document.getElementById("randomizeColorGroupBHues");
-    let randomizeHuesButton = document.getElementById("randomizeHues");
+
+    let maxPixelHeight = 0;
+    let maxPixelWidth = 0;
+    for (let image of creatureImages) {
+        let pixelHeight = image.length;
+        let pixelWidth = image.length > 0 ? image[0].length : 0;
+        maxPixelHeight = Math.max(maxPixelHeight, pixelHeight);
+        maxPixelWidth = Math.max(maxPixelWidth, pixelWidth);
+    }
+
+    let maxPixelSizeByHeight = Math.floor((canvas.height - 40) / maxPixelHeight);
+    let maxPixelSizeByWidth = Math.floor((canvas.width - 40) / maxPixelWidth);
+    maxPixelSize = Math.min(maxPixelSizeByHeight, maxPixelSizeByWidth);
+
+    let newCanvasHeight = maxPixelSize * maxPixelHeight + 40
+    let newCanvasWidth = maxPixelSize * maxPixelWidth + 40
+
+    canvas.height=newCanvasHeight
+    canvas.width=newCanvasWidth
+
+    let randomizeCreatureColorsButton = document.getElementById("randomizeCreatureColors");
+
+    let colorModTable = document.getElementById("color-modding-table");
+    let colorModTableHeaderRow = document.createElement("tr");
+    let colorModTableHueSliderRow = document.createElement("tr");
+    let colorModTableSaturationSliderRow = document.createElement("tr");
+    let colorModTableBrightnessliderRow = document.createElement("tr");
+    let colorModTableRandomizeColorButtonRow = document.createElement("tr");
+    let colorModTableRandomizeHueButtonRow = document.createElement("tr");
+    let colorModTableResetHueButtonRow = document.createElement("tr");
+    let colorModTableUniformHueButtonRow = document.createElement("tr");
+
+    colorModTableHeaderRow.appendChild(document.createElement("th"))
+    colorModTable.appendChild(colorModTableHeaderRow)
+
+    let td = document.createElement("td")
+    td.innerHTML = "Hue Sliders:"
+    colorModTableHueSliderRow.appendChild(td)
+    colorModTable.appendChild(colorModTableHueSliderRow)
+
+    td = document.createElement("td")
+    td.innerHTML = "Saturation Sliders:"
+    colorModTableSaturationSliderRow.appendChild(td)
+    colorModTable.appendChild(colorModTableSaturationSliderRow)
+
+    td = document.createElement("td")
+    td.innerHTML = "Brightness Sliders:"
+    colorModTableBrightnessliderRow.appendChild(td)
+    colorModTable.appendChild(colorModTableBrightnessliderRow)
+
+    td = document.createElement("td")
+    td.innerHTML = "Randomize Colors:"
+    colorModTableRandomizeColorButtonRow.appendChild(td)
+    colorModTable.appendChild(colorModTableRandomizeColorButtonRow)
+
+    td = document.createElement("td")
+    td.innerHTML = "Randomize Hues:"
+    colorModTableRandomizeHueButtonRow.appendChild(td)
+    colorModTable.appendChild(colorModTableRandomizeHueButtonRow)
+
+    td = document.createElement("td")
+    td.innerHTML = "Reset Colors:"
+    colorModTableResetHueButtonRow.appendChild(td)
+    colorModTable.appendChild(colorModTableResetHueButtonRow)
+
+    td = document.createElement("td")
+    td.innerHTML = "Uniform Hues:"
+    colorModTableUniformHueButtonRow.appendChild(td)
+    colorModTable.appendChild(colorModTableUniformHueButtonRow)
+
+    console.log({colorGroups})
+    colorGroups.push(colors.map((color, index) => index))
+    console.log({colorGroups})
+
+    let hueSliders = []
+    let saturationSliders = []
+    let brightnessSliders = []
+    let uniformHueButtons = []
+    let resetColorButtons = []
+    let randomizeColorButtons = []
+    let randomizeHueButtons = []
+    let colorModifierArray = []
+
+
+    for (let i = 0; i < colorGroups.length; i++) {
+        // console.log("GROUP " + i)
+        // let colorGroupIndices = colorGroups[i];
+
+        // let colorGroupColorMods = {}
+        // colorModifierArray.push(colorGroupColorMods)
+
+        // let minBrightness = 1
+        // let maxBrightness = 0
+        // let minSaturation = 1
+        // let maxSaturation = 0
+
+        // for (let colorIndex of colorGroupIndices) {
+        //     let color = colors[colorIndex];
+        //     let hsl = ColorModifiers.rgbToHSL(color);
+        //     console.log("  sat: " + Math.round(hsl.s * 100) + ", bri: " + Math.round(hsl.l * 100))
+        //     minBrightness = Math.min(minBrightness, hsl.l)
+        //     maxBrightness = Math.max(maxBrightness, hsl.l)
+        //     minSaturation = Math.min(minSaturation, hsl.s)
+        //     maxSaturation = Math.max(maxSaturation, hsl.s)
+        // }
+
+        // colorGroupColorMods.minSaturationChange = -0 // -0.1 - minSaturation
+        // colorGroupColorMods.maxSaturationChange = 0 // 1.1 - maxSaturation
+        // colorGroupColorMods.minBrightnessChange = -2 // -0.1 - minBrightness
+        // colorGroupColorMods.maxBrightnessChange = 2 // 1.1 - maxBrightness
+
+        // console.log({
+        //     minBrightness,
+        //     maxBrightness,
+        //     minSaturation,
+        //     maxSaturation,
+        // })
+
+        let colorGroupNum = i + 1
+        let colorGroupID = i < colorGroups.length - 1 ? `Group ${colorGroupNum}` : "All"
+        let td = document.createElement("th")
+        td.innerHTML=`${colorGroupID} Colors`
+        colorModTableHeaderRow.appendChild(td)
+
+        let hueSlider = document.createElement("input");
+        hueSlider.id = `hueSliderGroup${colorGroupNum}`
+        hueSlider.classList.add('slider')
+        hueSlider.classList.add('slider-hue')
+        hueSlider.type="range"
+        hueSlider.min="-180"
+        hueSlider.max="180"
+        td = document.createElement("td")
+        td.appendChild(hueSlider)
+        colorModTableHueSliderRow.appendChild(td)
+        hueSliders.push(hueSlider)
+
+        let saturationSlider = document.createElement("input");
+        saturationSlider.id = `saturationSliderGroup${colorGroupNum}`
+        saturationSlider.classList.add('slider')
+        saturationSlider.classList.add('slider-saturation')
+        saturationSlider.type="range"
+        saturationSlider.min="-100"
+        saturationSlider.max="100"
+        td = document.createElement("td")
+        td.appendChild(saturationSlider)
+        saturationSliders.push(saturationSlider)
+        colorModTableSaturationSliderRow.appendChild(td)
+
+        let brightnessSlider = document.createElement("input");
+        brightnessSlider.id = `brightnessSliderGroup${colorGroupNum}`
+        brightnessSlider.classList.add('slider')
+        brightnessSlider.classList.add('slider-brightness')
+        brightnessSlider.type="range"
+        brightnessSlider.min="-100"
+        brightnessSlider.max="100"
+        td = document.createElement("td")
+        td.appendChild(brightnessSlider)
+        brightnessSliders.push(brightnessSlider)
+        colorModTableBrightnessliderRow.appendChild(td)
+
+        let uniformHueButton = document.createElement("button");
+        uniformHueButton.innerHTML = `Remove outlier colors in ${colorGroupID}`
+        uniformHueButton.title=`Set all ${colorGroupID} colors to the same hue`
+        td = document.createElement("td")
+        td.appendChild(uniformHueButton)
+        colorModTableUniformHueButtonRow.appendChild(td)
+        uniformHueButtons.push(uniformHueButton);
+
+        let resetColorButton = document.createElement("button");
+        resetColorButton.innerHTML = `Reset Colors (${colorGroupID})`
+        resetColorButton.title=`Reset ${colorGroupID} colors to their original color`
+        td = document.createElement("td")
+        td.appendChild(resetColorButton)
+        colorModTableResetHueButtonRow.appendChild(td)
+        resetColorButtons.push(resetColorButton);
+        
+        let randomizeColorButton = document.createElement("button");
+        randomizeColorButton.innerHTML = `Randomize Colors (${colorGroupID})`
+        randomizeColorButton.title=`Randomize Saturation, Brightness and Hue of ${colorGroupID} colors`
+        td = document.createElement("td")
+        td.appendChild(randomizeColorButton)
+        colorModTableRandomizeColorButtonRow.appendChild(td)
+        randomizeColorButtons.push(randomizeColorButton)
+        
+        let randomizeHueButton = document.createElement("button");
+        randomizeHueButton.innerHTML = `Randomize Hues (${colorGroupID})`
+        randomizeHueButton.title=`Randomize Hue of ${colorGroupID} colors (keep saturation and brightness as is)`
+        td = document.createElement("td")
+        td.appendChild(randomizeHueButton)
+        colorModTableRandomizeHueButtonRow.appendChild(td)
+        randomizeHueButtons.push(randomizeHueButton)
+    }
+
+    // let hueGroupASlider = document.getElementById("hueGroupASlider")
+    // let hueGroupBSlider = document.getElementById("hueGroupBSlider")
+    // let saturationColorGroupASlider = document.getElementById("saturationcolorGroupASlider")
+    // let saturationColorGroupBSlider = document.getElementById("saturationcolorGroupBSlider")
+    // let brightnessColorGroupASlider = document.getElementById("brightnesscolorGroupASlider")
+    // let brightnessColorGroupBSlider = document.getElementById("brightnesscolorGroupBSlider")
+    // let uniformColorGroupBHuesButton = document.getElementById("uniformColorGroupBHues");
+    // let uniformColorGroupAHuesButton = document.getElementById("uniformColorGroupAHues");
+    // let resetColorGroupAColorsButton = document.getElementById("resetColorGroupAColors");
+    // let resetColorGroupBColorsButton = document.getElementById("resetColorGroupBColors");
+    // let randomizeColorGroupAColorsButton = document.getElementById("randomizeColorGroupAColors");
+    // let randomizeColorGroupBColorsButton = document.getElementById("randomizeColorGroupBColors");
+    // let randomizeColorGroupAHuesButton = document.getElementById("randomizeColorGroupAHues");
+    // let randomizeColorGroupBHuesButton = document.getElementById("randomizeColorGroupBHues");
 
     let resetSliders = () => {
-        hueSlider.value = 0;
-        colorGroupBSlider.value = 0;
-        colorGroupASlider.value = 0;
-        saturationSlider.value = 0;
-        saturationColorGroupBSlider.value = 0;
-        saturationColorGroupASlider.value = 0;
-        brightnessSlider.value = 0;
-        brightnessColorGroupBSlider.value = 0;
-        brightnessColorGroupASlider.value = 0;
+        for (let slider of hueSliders) {
+            slider.value = 0;
+        }
+        for (let slider of brightnessSliders) {
+            slider.value = 0;
+        }
+        for (let slider of saturationSliders) {
+            slider.value = 0;
+        }
     }
-
-    // the colors are organized into groupA and groupB - for creature, groupA = body and groupB = outline and feet
-    // for the randomization, these values specify the acceptible range for the saturation and brightness for these color groups.
-    // You'll likely have to play around with these ranges.
-    let colorModifiers = {
-        // when selecting a random color, the saturation value of the main colors should be between -.6 and .6
-        saturationGroupAStart: -.6,
-        saturationGroupAEnd: .6,
-        // when selecting a random color, the brightness value of the main colors should be between -.4 and .1
-        brightnessGroupAStart: -.4,
-        brightnessGroupAEnd: .1,
-        
-        // when selecting a random color, the saturation value of the groupB colors should be between -.5 and .7
-        saturationGroupBStart: -.5,
-        saturationGroupBEnd: .7,
-        // when selecting a random color, the brightness value of the groupB colors should be between -.5 and .1
-        brightnessGroupBStart: -.5,
-        brightnessGroupBEnd: .1,
-    }
-
-    colorModifiers['saturationGroupARange'] = colorModifiers.saturationGroupAEnd - colorModifiers.saturationGroupAStart
-    colorModifiers['brightnessGroupARange'] = colorModifiers.brightnessGroupAEnd - colorModifiers.brightnessGroupAStart
-    colorModifiers['saturationGroupBRange'] = colorModifiers.saturationGroupBEnd - colorModifiers.saturationGroupBStart
-    colorModifiers['brightnessGroupBRange'] = colorModifiers.brightnessGroupBEnd - colorModifiers.brightnessGroupBStart
-
 
     let creatureColors = [];
     let defaultCreatureColors = [];
@@ -105,7 +269,7 @@ function loadValues() {
     for (let i = 0; i < creatureColors.length; i++) {
 
         let color = creatureColors[i]
-        let row = table.insertRow(i);
+        let row = colorHexTable.insertRow(i);
         let cell = row.insertCell(0);
         let cell2 = row.insertCell(1);
 
@@ -123,12 +287,14 @@ function loadValues() {
             {
                 color: color,
                 input: input,
-                span: span
+                span: span,
+                colorIndex: i
             }
         );
     }
 
-    let creature = new Creature(creatureImages, creatureColors, defaultCreatureColors, canvas, ctx, colorGroupAIndices, creatureTableRows, 'creature_flavor', "#d6eaf2", textarea, resetSliders, colorModifiers);
+    // let creature = new Creature(creatureImages, creatureColors, defaultCreatureColors, canvas, ctx, colorGroupAIndices, creatureTableRows, yamlOptionName, backgroundColorInCanvas, textarea, resetSliders, colorModifiers);
+    let creature = new Creature(creatureImages, creatureColors, defaultCreatureColors, canvas, ctx, colorGroups, creatureTableRows, yamlOptionName, backgroundColorInCanvas, textarea, resetSliders, mainColorsPerGroup, firstColorIndexInYamlOption, maxPixelSize);
 
     for (let i = 0; i < creatureTableRows.length; i++) {
         creatureTableRows[i].input.addEventListener("input", () => { creature.draw() });
@@ -137,47 +303,61 @@ function loadValues() {
 
     canvas.addEventListener("click", () => { creature.changeAnimation(/*saveGifHelper*/) }, false);
 
-    hueSlider.addEventListener("input", () => { creature.setAllColorsRelativeHue(Number.parseInt(hueSlider.value)) })
-    colorGroupASlider.addEventListener("input", () => { creature.setColorGroupARelativeHues(Number.parseInt(colorGroupASlider.value)) })
-    colorGroupBSlider.addEventListener("input", () => { creature.setColorGroupBRelativeHue(Number.parseInt(colorGroupBSlider.value)) })
 
-    saturationSlider.addEventListener("input", () => { creature.changeAllSaturation(Number.parseFloat(saturationSlider.value)) })
-    saturationColorGroupBSlider.addEventListener("input", () => { creature.setColorGroupBRelativeSaturation(Number.parseFloat(saturationColorGroupBSlider.value)) })
-    saturationColorGroupASlider.addEventListener("input", () => { creature.setColorGroupARelativeSaturation(Number.parseFloat(saturationColorGroupASlider.value)) })
+    for (let colorGroupIndex = 0; colorGroupIndex < colorGroups.length; colorGroupIndex++) {
+        let hueSlider = hueSliders[colorGroupIndex]
+        if (colorGroupIndex === hueSliders.length - 1) {
+            hueSlider.addEventListener("input", () => { creature.setAllColorsRelativeHue(Number.parseInt(hueSlider.value)) })
+        } else {
+            hueSlider.addEventListener("input", () => { creature.setColorGroupRelativeHues(Number.parseInt(hueSlider.value), colorGroupIndex ) })
+        }
+        hueSlider.addEventListener("change", () => { creature.saveCurrentColors() })
 
-    brightnessSlider.addEventListener("input", () => { creature.changeAllBrightness(Number.parseFloat(brightnessSlider.value)) })
-    brightnessColorGroupBSlider.addEventListener("input", () => { creature.setColorGroupBRelativeBrightness(Number.parseFloat(brightnessColorGroupBSlider.value)) })
-    brightnessColorGroupASlider.addEventListener("input", () => { creature.setColorGroupARelativeBrightness(Number.parseFloat(brightnessColorGroupASlider.value)) })
+        let saturationSlider = saturationSliders[colorGroupIndex]
+        if (colorGroupIndex === saturationSliders.length - 1) {
+            saturationSlider.addEventListener("input", () => { creature.changeAllSaturation(Number.parseFloat(saturationSlider.value / 100)) })
+        } else {
+            saturationSlider.addEventListener("input", () => { creature.setColorGroupRelativeSaturation(Number.parseFloat(saturationSlider.value / 100), colorGroupIndex ) })
+        }
+        saturationSlider.addEventListener("change", () => { creature.saveCurrentColors() })
 
+        let brightnessSlider = brightnessSliders[colorGroupIndex]
+        if (colorGroupIndex === brightnessSliders.length - 1) {
+            brightnessSlider.addEventListener("input", () => { creature.changeAllBrightness(Number.parseFloat(brightnessSlider.value / 100)) })
+        } else {
+            brightnessSlider.addEventListener("input", () => { creature.setColorGroupRelativeBrightness(Number.parseFloat(brightnessSlider.value / 100), colorGroupIndex ) })
+        }
+        brightnessSlider.addEventListener("change", () => { creature.saveCurrentColors() })
+
+        let uniformHueButton = uniformHueButtons[colorGroupIndex];
+        uniformHueButton.addEventListener("click", () => { creature.uniformHuesOfGroup(colorGroupIndex) });
+        let resetColorButton = resetColorButtons[colorGroupIndex];
+        resetColorButton.addEventListener("click", () => { creature.resetColorGroupToDefault(colorGroupIndex) });
+        let randomizeColorButton = randomizeColorButtons[colorGroupIndex];
+        if (colorGroupIndex === colorGroups.length - 1) {
+            randomizeColorButton.addEventListener("click", () => { creature.randomizeAllColorQualities() });
+        } else {
+            randomizeColorButton.addEventListener("click", () => {creature.randomizeGroupColorQualities(colorGroupIndex)});
+        }
+        let randomizeHueButton = randomizeHueButtons[colorGroupIndex];
+        if (colorGroupIndex === colorGroups.length - 1) {
+            randomizeHueButton.addEventListener("click", () => {creature.randomizeHues()});
+        } else {
+            randomizeHueButton.addEventListener("click", () => {creature.randomizeHueOfGroup(colorGroupIndex)});
+        }
+    }
+
+    pixelSizeSlider.max=`${maxPixelSize}`
     pixelSizeSlider.addEventListener("input", () => { creature.setPixelSize(pixelSizeSlider.value) })
 
-    hueSlider.addEventListener("change", () => { creature.saveCurrentColors() })
-    colorGroupBSlider.addEventListener("change", () => { creature.saveCurrentColors() })
-    colorGroupASlider.addEventListener("change", () => { creature.saveCurrentColors() })
-    saturationSlider.addEventListener("change", () => { creature.saveCurrentColors() })
-    saturationColorGroupBSlider.addEventListener("change", () => { creature.saveCurrentColors() })
-    saturationColorGroupASlider.addEventListener("change", () => { creature.saveCurrentColors() })
-    brightnessSlider.addEventListener("change", () => { creature.saveCurrentColors() })
-    brightnessColorGroupBSlider.addEventListener("change", () => { creature.saveCurrentColors() })
-    brightnessColorGroupASlider.addEventListener("change", () => { creature.saveCurrentColors() })
 
-    randomizeCreatureColorsButton.addEventListener("click", () => { creature.randomizeColors() });
-    uniformColorGroupBHuesButton.addEventListener("click", () => { creature.uniformColorGroupBHues() });
-    uniformColorGroupAHuesButton.addEventListener("click", () => { creature.uniformColorGroupAHues() });
-    chaosCreatureButton.addEventListener("click", () => { creature.chaosButton() });
+
+    randomizeCreatureColorsButton.addEventListener("click", () => { creature.randomizeHues() });
+    // chaosCreatureButton.addEventListener("click", () => { creature.chaosButton() });
     randomizeCreatureEverythingButton.addEventListener("click", () => { creature.randomizeAllColorQualities() });
-    resetColorGroupAColorsButton.addEventListener("click", () => { creature.resetColorGroupAToDefault() });
-    resetColorGroupBColorsButton.addEventListener("click", () => { creature.resetColorGroupBToDefault() });
-    resetCreatureColorsButton.addEventListener("click", () => { creature.resetAllColorsToDefault() });
 
     saveGifButton.addEventListener("click", () => { creature.saveGif(maxPixelSize) })
 
-    randomizeColorGroupAColorsButton.addEventListener("click", () => {creature.randomizeGroupAColorQualities()});
-    randomizeColorGroupBColorsButton.addEventListener("click", () => {creature.randomizeGroupBColorQualities()});
-    randomizeCreatureColorsTableButton.addEventListener("click", () => {creature.randomizeAllColorQualities()});
-    randomizeColorGroupAHuesButton.addEventListener("click", () => {creature.randomizeGroupAHues()});
-    randomizeColorGroupBHuesButton.addEventListener("click", () => {creature.randomizeGroupBHues()});
-    randomizeHuesButton.addEventListener("click", () => {creature.randomizeColors()});
 
     
 
