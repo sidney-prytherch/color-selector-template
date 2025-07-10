@@ -48,12 +48,12 @@ function loadValues() {
         maxPixelWidth = Math.max(maxPixelWidth, pixelWidth);
     }
 
-    let maxPixelSizeByHeight = Math.floor((canvas.height - 40) / maxPixelHeight);
-    let maxPixelSizeByWidth = Math.floor((canvas.width - 40) / maxPixelWidth);
+    let maxPixelSizeByHeight = Math.floor((canvas.height - 10) / maxPixelHeight);
+    let maxPixelSizeByWidth = Math.floor((canvas.width - 10) / maxPixelWidth);
     maxPixelSize = Math.min(maxPixelSizeByHeight, maxPixelSizeByWidth);
 
-    let newCanvasHeight = maxPixelSize * maxPixelHeight + 40
-    let newCanvasWidth = maxPixelSize * maxPixelWidth + 40
+    let newCanvasHeight = maxPixelSize * maxPixelHeight + 10
+    let newCanvasWidth = maxPixelSize * maxPixelWidth + 10
 
     canvas.height = newCanvasHeight
     canvas.width = newCanvasWidth
@@ -297,8 +297,8 @@ function loadValues() {
             maxPixelWidth = Math.max(maxPixelWidth, pixelWidth);
         }
 
-        let maxPixelSizeByHeight = Math.floor((canvas.height - 40) / maxPixelHeight);
-        let maxPixelSizeByWidth = Math.floor((canvas.width - 40) / maxPixelWidth);
+        let maxPixelSizeByHeight = Math.floor((canvas.height - 10) / maxPixelHeight);
+        let maxPixelSizeByWidth = Math.floor((canvas.width - 10) / maxPixelWidth);
         maxPixelSize = Math.min(maxPixelSizeByHeight, maxPixelSizeByWidth);
 
         creature.updateAnimation(selectedAnimation.animationImages);
@@ -397,8 +397,8 @@ function loadValues() {
             maxPixelWidth = Math.max(maxPixelWidth, pixelWidth);
         }
 
-        let maxPixelSizeByHeight = Math.floor((canvas.height - 40) / maxPixelHeight);
-        let maxPixelSizeByWidth = Math.floor((canvas.width - 40) / maxPixelWidth);
+        let maxPixelSizeByHeight = Math.floor((canvas.height - 10) / maxPixelHeight);
+        let maxPixelSizeByWidth = Math.floor((canvas.width - 10) / maxPixelWidth);
         maxPixelSize = Math.min(maxPixelSizeByHeight, maxPixelSizeByWidth);
 
         pixelSizeSlider.max = `${maxPixelSize}`

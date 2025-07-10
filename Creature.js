@@ -442,7 +442,9 @@ class Creature {
         this.ctx.rect(0, 0, this.canvas.width, this.canvas.height); // Add a rectangle to the current path
         this.ctx.fill(); // Render the path
 
-        let topSpace = 20 + (this.maxPixelSize - this.pixelSize) * currentImage.length
+        // let topSpace = 20 + (this.maxPixelSize - this.pixelSize) * currentImage.length
+        let topSpace = Math.floor((this.canvas.height - (this.pixelSize * currentImage.length)) / 2)
+        let leftSpace = Math.floor((this.canvas.width - (this.pixelSize * currentImage[0].length)) / 2)
 
         for (let y = 0; y < currentImage.length; y++) {
             for (let x = 0; x < currentImage[y].length; x++) {
@@ -450,7 +452,7 @@ class Creature {
 
                 this.ctx.fillStyle = color;
                 this.ctx.beginPath(); // Start a new path
-                this.ctx.rect(x * this.pixelSize + 20, y * this.pixelSize + topSpace, this.pixelSize, this.pixelSize); // Add a rectangle to the current path
+                this.ctx.rect(x * this.pixelSize + leftSpace, y * this.pixelSize + topSpace, this.pixelSize, this.pixelSize); // Add a rectangle to the current path
                 this.ctx.fill(); // Render the path
             }
         }
