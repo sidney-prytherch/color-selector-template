@@ -170,7 +170,10 @@ class Creature {
     }
 
     updateAnimation(animation) {
+        this.stopAnimation();
         this.animationImages = animation;
+        this.currentImageIndex = 0;
+        this.startAnimation();
     }
 
     updateMaxPixelSize(maxPixelSize) {

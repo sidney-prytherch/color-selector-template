@@ -239,13 +239,17 @@ function loadValues() {
         }
     });
 
-    for (let i = 0; i < animation.length; i++) {
-        let table = animation[i];
-        for (let y = 0; y < table.length; y++) {
-            for (let x = 0; x < table[y].length; x++) {
-                for (let color of creatureColors) {
-                    if (table[y][x] === color.color) {
-                        table[y][x] = color;
+
+    for (let animationData of animations) {
+        let anim = animationData.animationImages;
+        for (let i = 0; i < anim.length; i++) {
+            let table = anim[i];
+            for (let y = 0; y < table.length; y++) {
+                for (let x = 0; x < table[y].length; x++) {
+                    for (let color of creatureColors) {
+                        if (table[y][x] === color.color) {
+                            table[y][x] = color;
+                        }
                     }
                 }
             }
@@ -289,7 +293,7 @@ function loadValues() {
         let selectedAnimation = animations.find(it => it.animationName == animationDropDown.value);
         let maxPixelHeight = 0;
         let maxPixelWidth = 0;
-        let animation = animations[0].animationImages;
+        let animation = selectedAnimation.animationImages;
         for (let image of animation) {
             let pixelHeight = image.length;
             let pixelWidth = image.length > 0 ? image[0].length : 0;
