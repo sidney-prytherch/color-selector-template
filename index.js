@@ -7,7 +7,6 @@ function loadValues() {
 
     //this will get rewritten automatically now
     let maxPixelSize = 20;
-    let animationMSPerFrame = 100;
 
     document.getElementById("span-instructions").innerHTML = `Click ${characterName} to pause/continue animation`
     document.getElementById("additional-info").innerHTML = `${additionalInfoOrInstructions}`
@@ -17,7 +16,7 @@ function loadValues() {
     let textarea = document.getElementById("textarea")
     let pixelSizeSlider = document.getElementById("pixelSizeSlider")
     let canvasSizeSlider = document.getElementById("canvasSizeSlider")
-    let animationSpeedSlider = document.getElementById("animationSpeedSlider")
+    let secondsPerAnimationLoop = document.getElementById("secondsPerAnimationLoop")
     let colorHexTable = document.getElementById("colorHexTable");
     let saveGifButton = document.getElementById("saveGif");
     let randomizeCreatureEverythingButton = document.getElementById("randomizeCreatureEverything")
@@ -199,21 +198,6 @@ function loadValues() {
         randomizeHueButtons.push(randomizeHueButton)
     }
 
-    // let hueGroupASlider = document.getElementById("hueGroupASlider")
-    // let hueGroupBSlider = document.getElementById("hueGroupBSlider")
-    // let saturationColorGroupASlider = document.getElementById("saturationcolorGroupASlider")
-    // let saturationColorGroupBSlider = document.getElementById("saturationcolorGroupBSlider")
-    // let brightnessColorGroupASlider = document.getElementById("brightnesscolorGroupASlider")
-    // let brightnessColorGroupBSlider = document.getElementById("brightnesscolorGroupBSlider")
-    // let uniformColorGroupBHuesButton = document.getElementById("uniformColorGroupBHues");
-    // let uniformColorGroupAHuesButton = document.getElementById("uniformColorGroupAHues");
-    // let resetColorGroupAColorsButton = document.getElementById("resetColorGroupAColors");
-    // let resetColorGroupBColorsButton = document.getElementById("resetColorGroupBColors");
-    // let randomizeColorGroupAColorsButton = document.getElementById("randomizeColorGroupAColors");
-    // let randomizeColorGroupBColorsButton = document.getElementById("randomizeColorGroupBColors");
-    // let randomizeColorGroupAHuesButton = document.getElementById("randomizeColorGroupAHues");
-    // let randomizeColorGroupBHuesButton = document.getElementById("randomizeColorGroupBHues");
-
     let resetSliders = () => {
         for (let slider of hueSliders) {
             slider.value = 0;
@@ -285,29 +269,20 @@ function loadValues() {
         );
     }
 
-    // let creature = new Creature(creatureImages, creatureColors, defaultCreatureColors, canvas, ctx, colorGroupAIndices, creatureTableRows, yamlOptionName, backgroundColorInCanvas, textarea, resetSliders, colorModifiers);
+    let selectedAnimation = animations[0];
+    let animationMSPerFrame;
+    getMSPerFrame(selectedAnimation.animationSeconds);
+
+    function getMSPerFrame(animationSeconds) {
+        animationMSPerFrame = animationSeconds * 1000 / (selectedAnimation.animationImages.length);
+        secondsPerAnimationLoop.value = selectedAnimation.animationSeconds;
+    }
+
     let creature = new Creature(animation, creatureColors, defaultCreatureColors, canvas, ctx, colorGroups, creatureTableRows, yamlOptionName, backgroundColorInCanvas, textarea, resetSliders, mainColorsPerGroup, firstColorIndexInYamlOption, maxPixelSize, animationMSPerFrame);
 
 
     animationDropDown.addEventListener("change", () => {
-        let selectedAnimation = animations.find(it => it.animationName == animationDropDown.value);
-        let maxPixelHeight = 0;
-        let maxPixelWidth = 0;
-        let animation = selectedAnimation.animationImages;
-        for (let image of animation) {
-            let pixelHeight = image.length;
-            let pixelWidth = image.length > 0 ? image[0].length : 0;
-            maxPixelHeight = Math.max(maxPixelHeight, pixelHeight);
-            maxPixelWidth = Math.max(maxPixelWidth, pixelWidth);
-        }
-
-        let maxPixelSizeByHeight = Math.floor((canvas.height - 10) / maxPixelHeight);
-        let maxPixelSizeByWidth = Math.floor((canvas.width - 10) / maxPixelWidth);
-        maxPixelSize = Math.min(maxPixelSizeByHeight, maxPixelSizeByWidth);
-
-        creature.updateAnimation(selectedAnimation.animationImages);
-        creature.updateMaxPixelSize(maxPixelSize);
-
+        setAnimation(animationDropDown.value);
     })
 
     defaultPaletteDropdown.addEventListener("change", () => {
@@ -378,22 +353,10 @@ function loadValues() {
     pixelSizeSlider.max = `${maxPixelSize}`
     pixelSizeSlider.addEventListener("input", () => { creature.setPixelSize(pixelSizeSlider.value) })
 
-    animationSpeedSlider.addEventListener("input", () => {
-        let framesPerMS = Math.round(-185 * Math.pow(animationSpeedSlider.value, 2) + 200)
-        creature.setAnimationSpeed(framesPerMS);
-        creature.stopAnimation();
-        creature.startAnimation();
-    })
-
-    canvasSizeSlider.addEventListener("change", () => {
-        canvas.height = canvasSizeSlider.value
-        canvas.width = canvasSizeSlider.value
-        let ctx = canvas.getContext("2d");
-
-        let selectedAnimation = animations.find(it => it.animationName == animationDropDown.value);
+    function getMaxPixelSize() {
         let maxPixelHeight = 0;
         let maxPixelWidth = 0;
-        let animation = animations[0].animationImages;
+        let animation = selectedAnimation.animationImages;
         for (let image of animation) {
             let pixelHeight = image.length;
             let pixelWidth = image.length > 0 ? image[0].length : 0;
@@ -404,9 +367,44 @@ function loadValues() {
         let maxPixelSizeByHeight = Math.floor((canvas.height - 10) / maxPixelHeight);
         let maxPixelSizeByWidth = Math.floor((canvas.width - 10) / maxPixelWidth);
         maxPixelSize = Math.min(maxPixelSizeByHeight, maxPixelSizeByWidth);
+    }
+
+
+    function setAnimation(animationName, speed) {
+        if (selectedAnimation.animationName !== animationName) {
+            selectedAnimation = animations.find(it => it.animationName == animationName);
+
+            getMaxPixelSize()
+
+
+            creature.updateAnimation(selectedAnimation.animationImages);
+            creature.updateMaxPixelSize(maxPixelSize);
+        }
+        if (!speed) {
+            speed = selectedAnimation.animationSeconds;
+        }
+        getMSPerFrame(speed)
+        creature.setAnimationSpeed(animationMSPerFrame);
+        creature.stopAnimation();
+        creature.startAnimation();
+
+    }
+
+    secondsPerAnimationLoop.addEventListener("input", () => {
+        setAnimation(selectedAnimation.animationName, secondsPerAnimationLoop.value)
+    })
+
+    canvasSizeSlider.addEventListener("change", () => {
+        canvas.height = canvasSizeSlider.value
+        canvas.width = canvasSizeSlider.value
+        let ctx = canvas.getContext("2d");
+
+        selectedAnimation = animations.find(it => it.animationName == animationDropDown.value);
+
+        getMaxPixelSize();
 
         pixelSizeSlider.max = `${maxPixelSize}`
-        pixelSizeSlider.value = `${Math.min(maxPixelSize, pixelSizeSlider.value )}`
+        pixelSizeSlider.value = `${Math.min(maxPixelSize, pixelSizeSlider.value)}`
         creature.setPixelSize(pixelSizeSlider.value)
 
 
