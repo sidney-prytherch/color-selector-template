@@ -270,12 +270,12 @@ function loadValues() {
     }
 
     let selectedAnimation = animations[0];
+    secondsPerAnimationLoop.value = selectedAnimation.animationSeconds;
     let animationMSPerFrame;
     getMSPerFrame(selectedAnimation.animationSeconds);
 
     function getMSPerFrame(animationSeconds) {
         animationMSPerFrame = animationSeconds * 1000 / (selectedAnimation.animationImages.length);
-        secondsPerAnimationLoop.value = selectedAnimation.animationSeconds;
     }
 
     let creature = new Creature(animation, creatureColors, defaultCreatureColors, canvas, ctx, colorGroups, creatureTableRows, yamlOptionName, backgroundColorInCanvas, textarea, resetSliders, mainColorsPerGroup, firstColorIndexInYamlOption, maxPixelSize, animationMSPerFrame);
@@ -373,10 +373,11 @@ function loadValues() {
     function setAnimation(animationName, speed) {
         if (selectedAnimation.animationName !== animationName) {
             selectedAnimation = animations.find(it => it.animationName == animationName);
-
+            secondsPerAnimationLoop.value = selectedAnimation.animationSeconds;
+            
             getMaxPixelSize()
-
-
+            
+            
             creature.updateAnimation(selectedAnimation.animationImages);
             creature.updateMaxPixelSize(maxPixelSize);
         }
