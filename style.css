@@ -13,6 +13,9 @@
   --buttonGroupBSemiTransparent: rgba(var(--buttonGroupBRGB), 0.76);
 }
 
+textarea, #colorHexTable * {
+  font-family: monospace;
+}
 
 body {
   background-color: var(--background);
