@@ -435,6 +435,9 @@ function createCreature(character) {
         getMSPerFrame(speed)
         creature.setAnimationSpeed(animationMSPerFrame);
         creature.stopAnimation();
+        pixelSizeSlider.max = `${maxPixelSize}`
+        pixelSizeSlider.value = `${Math.min(maxPixelSize, pixelSizeSlider.value)}`
+        creature.setPixelSize(pixelSizeSlider.value)
         creature.startAnimation();
 
     }
