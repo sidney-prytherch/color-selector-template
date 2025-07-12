@@ -1,7 +1,6 @@
 class Creature {
 
     /**
-     * 
      * @param {String[][][]} animationImages - array of images, where each image is a 2D array of colors
      * @param {{ color: String }[]} colorObjects - array of colors as Color Object
      * @param {{ color: String }[]} defaultColors - array of default colors as Color Object
@@ -17,33 +16,42 @@ class Creature {
      * @param {Number} firstColorIndex - in the yaml, the first color has this index
      * @param {Number} maxPixelSize - max pixel size
      */
-    constructor(animationImages, colorObjects, defaultColors, canvas, context, colorGroups, tableRows, yamlKey, backgroundColor, textarea, resetSliders, mainColorsPerGroup, firstColorIndex, maxPixelSize, animationMSPerFrame) {
+
+    constructor(
+        htmlElements,
+        pixelData,
+        animationMSPerFrame, 
+        characterData
+    ) {
+        this.maxPixelHeight = pixelData.maxPixelHeight;
+        this.maxPixelWidth = pixelData.maxPixelWidth;
+        this.maxPixelSize = pixelData.maxPixelSize;
         this.animationMSPerFrame = animationMSPerFrame;
-        this.colorObjects = colorObjects;
-        this.canvas = canvas;
-        this.ctx = context;
-        this.defaultColors = defaultColors;
-        this.currentColors = defaultColors.map(it => it);
+        this.colorObjects = characterData.characterColors;
+        this.canvas = htmlElements.canvas;
+        this.ctx = htmlElements.ctx;
+        this.defaultColors = characterData.defaultColors;
+        this.currentColors = this.defaultColors.map(it => it);
         this.currentImageIndex = 0;
-        this.animationImages = animationImages;
-        this.tableRows = tableRows;
+        this.currentAnimationIndex = characterData.currentAnimationIndex;
+        this.animationImages = characterData.animations[this.currentAnimationIndex].animationImages;
+        this.tableRows = htmlElements.creatureTableRows;
+        this.pixelSizeSlider = htmlElements.pixelSizeSlider;
         // this.colorGroupAIndices = colorGroupAIndices;
-        this.colorGroups = colorGroups;
-        this.yamlKey = yamlKey;
+        this.colorGroups = characterData.colorGroupData.map(group => group.colorIndices);
+        this.yamlKey = characterData.yamlOptionName;
         this.isAnimating = false;
         this.animationInterval = null;
         this.pixelSize = 10;
-        this.backgroundColor = backgroundColor;
-        this.textarea = textarea;
+        this.backgroundColor = characterData.backgroundColorInCanvas;
+        this.textarea = htmlElements.textarea;
         this.mediaRecorder = null;
         this.recordedChunks = null;
         this.gifFrame = -1;
-        this.resetSliders = resetSliders;
-        this.mainColorsPerGroup = mainColorsPerGroup;
-        this.firstColorIndex = firstColorIndex;
-        this.maxPixelSize = maxPixelSize;
-
-        // this.startAnimation();
+        this.resetSliders = htmlElements.resetSliders;
+        this.mainColorsPerGroup = characterData.colorGroupData.map(group => group.indexOfMainColor);
+        this.firstColorIndex = characterData.firstColorIndexInYamlOption;
+        this.characterData = characterData;
     }
 
     setAnimationSpeed(animationMSPerFrame) {
@@ -176,8 +184,12 @@ class Creature {
         this.startAnimation();
     }
 
-    updateMaxPixelSize(maxPixelSize) {
+    updateMaxPixelSize(maxPixelSize, maxPixelHeight, maxPixelWidth) {
         this.maxPixelSize = maxPixelSize;
+        this.maxPixelHeight = maxPixelHeight;
+        this.maxPixelWidth = maxPixelWidth;
+        // this.leftPadding = (this.canvas.width - maxPixelWidth) / 2
+        // this.topPadding = (this.canvas.height - maxPixelHeight) / 2
     }
 
     updateCtx(ctx) {
@@ -446,8 +458,11 @@ class Creature {
         this.ctx.fill(); // Render the path
 
         // let topSpace = 20 + (this.maxPixelSize - this.pixelSize) * currentImage.length
-        let topSpace = Math.floor((this.canvas.height - (this.pixelSize * currentImage.length)) / 2)
-        let leftSpace = Math.floor((this.canvas.width - (this.pixelSize * currentImage[0].length)) / 2)
+        // let topSpace = Math.floor((this.canvas.height - (this.pixelSize * currentImage.length)) / 2)
+        // let leftSpace = Math.floor((this.canvas.width - (this.pixelSize * currentImage[0].length)) / 2)
+
+        let topSpace = Math.floor((this.canvas.height - (this.pixelSize * this.maxPixelHeight)) / 2)
+        let leftSpace = Math.floor((this.canvas.width - (this.pixelSize * this.maxPixelWidth)) / 2)
 
         for (let y = 0; y < currentImage.length; y++) {
             for (let x = 0; x < currentImage[y].length; x++) {

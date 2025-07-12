@@ -13,10 +13,10 @@
 </head>
 
 <body>
-    <div class="container">
+    <div class="container" id="characterContainer">
         <div class="row container">
             <div class="container">
-                <canvas id="creatureCanvas" height="600" width="600"></canvas>
+                <canvas id="creatureCanvas" height="350" width="350"></canvas>
                 <div class="horizontal container center">
                     <button id="randomizeCreatureEverything">
                         <h3>Randomize Colors</h3>
@@ -39,10 +39,11 @@
             <div class="container">
                 </br>
                 <span id="span-instructions"></span>
+                <div class="container row" id="characterButtons"></div>
                 <label for="pixelSizeSlider">Change Pixel Size:</label>
                 <input class="slider" id="pixelSizeSlider" type="range" min="1" max="20" value="10" />
                 <label for="pixelSizeSlider">Change Canvas Size:</label>
-                <input class="slider" id="canvasSizeSlider" type="range" min="200" max="800" step="50" value="600" />
+                <input class="slider" id="canvasSizeSlider" type="range" min="200" max="800" step="50" value="350" />
                 <label for="pixelSizeSlider">Animation Loop time:</label>
                 <input class="slider" id="secondsPerAnimationLoop" type="range" min=".1" max="5" value="5" step=".1" />
                 <div class="container row" style="display:none;">

@@ -3,25 +3,49 @@
 
 window.addEventListener("load", loadValues);
 
-function loadValues() {
+let body;
+let characterContainerOriginalElement;
+let characterContainers = [];
+let characterButtons = [];
+let currentCharacterIndex = 0;
+
+function createCreature(character) {
+
+    let characterContainerElement = characterContainerOriginalElement.cloneNode(true);
+    characterContainers.push(characterContainerElement);
+    
+    let switchToCharacterButton = document.createElement("button");
+    let switchToCharacterButtonText = document.createElement("h3")
+    switchToCharacterButtonText.innerHTML = `View ${character.characterName}`
+    switchToCharacterButton.style.margin = "8px"
+    switchToCharacterButton.style.borderColor = character.buttonOutline;
+    switchToCharacterButton.style.background = character.buttonColor;
+    switchToCharacterButton.style.color = character.buttonFontColor;
+    switchToCharacterButton.appendChild(switchToCharacterButtonText);
+    characterButtons.push(switchToCharacterButton);
+
 
     //this will get rewritten automatically now
     let maxPixelSize = 20;
+    let maxPixelHeight = 0;
+    let maxPixelWidth = 0;
 
-    document.getElementById("span-instructions").innerHTML = `Click ${characterName} to pause/continue animation`
-    document.getElementById("additional-info").innerHTML = `${additionalInfoOrInstructions}`
+    characterContainerElement.querySelector("#span-instructions").innerHTML = `Click ${character.characterName} to pause/continue animation`
+    characterContainerElement.querySelector("#additional-info").innerHTML = `${character.additionalInfoOrInstructions}`
+    let animations = character.animations;
+    let defaultPalettes = character.palettes;
 
-    let canvas = document.getElementById("creatureCanvas")
+    let canvas = characterContainerElement.querySelector("#creatureCanvas")
     let ctx = canvas.getContext("2d");
-    let textarea = document.getElementById("textarea")
-    let pixelSizeSlider = document.getElementById("pixelSizeSlider")
-    let canvasSizeSlider = document.getElementById("canvasSizeSlider")
-    let secondsPerAnimationLoop = document.getElementById("secondsPerAnimationLoop")
-    let colorHexTable = document.getElementById("colorHexTable");
-    let saveGifButton = document.getElementById("saveGif");
-    let randomizeCreatureEverythingButton = document.getElementById("randomizeCreatureEverything")
-    let animationDropDown = document.getElementById("animation-dropdown");
-    let defaultPaletteDropdown = document.getElementById("default-palette-dropdown");
+    let textarea = characterContainerElement.querySelector("#textarea")
+    let pixelSizeSlider = characterContainerElement.querySelector("#pixelSizeSlider")
+    let canvasSizeSlider = characterContainerElement.querySelector("#canvasSizeSlider")
+    let secondsPerAnimationLoop = characterContainerElement.querySelector("#secondsPerAnimationLoop")
+    let colorHexTable = characterContainerElement.querySelector("#colorHexTable");
+    let saveGifButton = characterContainerElement.querySelector("#saveGif");
+    let randomizeCreatureEverythingButton = characterContainerElement.querySelector("#randomizeCreatureEverything")
+    let animationDropDown = characterContainerElement.querySelector("#animation-dropdown");
+    let defaultPaletteDropdown = characterContainerElement.querySelector("#default-palette-dropdown");
 
     for (let animation of animations) {
         let option = document.createElement("option");
@@ -37,8 +61,8 @@ function loadValues() {
         defaultPaletteDropdown.appendChild(option);
     }
 
-    let maxPixelHeight = 0;
-    let maxPixelWidth = 0;
+    maxPixelHeight = 0;
+    maxPixelWidth = 0;
     let animation = animations[0].animationImages;
     for (let image of animation) {
         let pixelHeight = image.length;
@@ -57,9 +81,9 @@ function loadValues() {
     canvas.height = newCanvasHeight
     canvas.width = newCanvasWidth
 
-    let randomizeCreatureColorsButton = document.getElementById("randomizeCreatureColors");
+    let randomizeCreatureColorsButton = characterContainerElement.querySelector("#randomizeCreatureColors");
 
-    let colorModTable = document.getElementById("color-modding-table");
+    let colorModTable = characterContainerElement.querySelector("#color-modding-table");
     let colorModTableHeaderRow = document.createElement("tr");
     let colorModTableHueSliderRow = document.createElement("tr");
     let colorModTableSaturationSliderRow = document.createElement("tr");
@@ -107,7 +131,13 @@ function loadValues() {
     colorModTableUniformHueButtonRow.appendChild(td)
     colorModTable.appendChild(colorModTableUniformHueButtonRow)
 
-    colorGroups.push(defaultColors.map((color, index) => index))
+    character.colorGroupData.push(
+        {
+            colorGroupName: "All",
+            colorIndices: defaultPalettes[0].colors.map((color, index) => index),
+            indexOfMainColor: character.colorGroupData[0].indexOfMainColor
+        }
+    )
 
     let hueSliders = []
     let saturationSliders = []
@@ -117,86 +147,85 @@ function loadValues() {
     let randomizeColorButtons = []
     let randomizeHueButtons = []
 
+    for (let colorGroup of character.colorGroupData) {
 
-    for (let i = 0; i < colorGroups.length; i++) {
 
-        let colorGroupNum = i + 1
-        let colorGroupID = i < colorGroups.length - 1 ? `Group ${colorGroupNum}` : "All"
-        if (i < colorGroupNames.length) {
-            colorGroupID = colorGroupNames[i];
-        }
-        let td = document.createElement("th")
-        td.innerHTML = `${colorGroupID} Colors`
-        colorModTableHeaderRow.appendChild(td)
+            let uniqueID = `${character.characterName}${colorGroup.colorGroupName}`
+            let colorGroupID = colorGroup.colorGroupName
+            let td = document.createElement("th")
+            td.innerHTML = `${colorGroup.colorGroupName} Colors`
+            colorModTableHeaderRow.appendChild(td)
 
-        let hueSlider = document.createElement("input");
-        hueSlider.id = `hueSliderGroup${colorGroupNum}`
-        hueSlider.classList.add('slider')
-        hueSlider.classList.add('slider-hue')
-        hueSlider.type = "range"
-        hueSlider.min = "-180"
-        hueSlider.max = "180"
-        td = document.createElement("td")
-        td.appendChild(hueSlider)
-        colorModTableHueSliderRow.appendChild(td)
-        hueSliders.push(hueSlider)
+            let hueSlider = document.createElement("input");
+            hueSlider.id = `hueSliderGroup${uniqueID}`
+            hueSlider.classList.add('slider')
+            hueSlider.classList.add('slider-hue')
+            hueSlider.type = "range"
+            hueSlider.min = "-180"
+            hueSlider.max = "180"
+            td = document.createElement("td")
+            td.appendChild(hueSlider)
+            colorModTableHueSliderRow.appendChild(td)
+            hueSliders.push(hueSlider)
 
-        let saturationSlider = document.createElement("input");
-        saturationSlider.id = `saturationSliderGroup${colorGroupNum}`
-        saturationSlider.classList.add('slider')
-        saturationSlider.classList.add('slider-saturation')
-        saturationSlider.type = "range"
-        saturationSlider.min = "-100"
-        saturationSlider.max = "100"
-        td = document.createElement("td")
-        td.appendChild(saturationSlider)
-        saturationSliders.push(saturationSlider)
-        colorModTableSaturationSliderRow.appendChild(td)
+            let saturationSlider = document.createElement("input");
+            saturationSlider.id = `saturationSliderGroup${uniqueID}`
+            saturationSlider.classList.add('slider')
+            saturationSlider.classList.add('slider-saturation')
+            saturationSlider.type = "range"
+            saturationSlider.min = "-100"
+            saturationSlider.max = "100"
+            td = document.createElement("td")
+            td.appendChild(saturationSlider)
+            saturationSliders.push(saturationSlider)
+            colorModTableSaturationSliderRow.appendChild(td)
 
-        let brightnessSlider = document.createElement("input");
-        brightnessSlider.id = `brightnessSliderGroup${colorGroupNum}`
-        brightnessSlider.classList.add('slider')
-        brightnessSlider.classList.add('slider-brightness')
-        brightnessSlider.type = "range"
-        brightnessSlider.min = "-100"
-        brightnessSlider.max = "100"
-        td = document.createElement("td")
-        td.appendChild(brightnessSlider)
-        brightnessSliders.push(brightnessSlider)
-        colorModTableBrightnessliderRow.appendChild(td)
+            let brightnessSlider = document.createElement("input");
+            brightnessSlider.id = `brightnessSliderGroup${uniqueID}`
+            brightnessSlider.classList.add('slider')
+            brightnessSlider.classList.add('slider-brightness')
+            brightnessSlider.type = "range"
+            brightnessSlider.min = "-100"
+            brightnessSlider.max = "100"
+            td = document.createElement("td")
+            td.appendChild(brightnessSlider)
+            brightnessSliders.push(brightnessSlider)
+            colorModTableBrightnessliderRow.appendChild(td)
 
-        let uniformHueButton = document.createElement("button");
-        uniformHueButton.innerHTML = `Remove outlier colors in ${colorGroupID}`
-        uniformHueButton.title = `Set all ${colorGroupID} colors to the same hue`
-        td = document.createElement("td")
-        td.appendChild(uniformHueButton)
-        colorModTableUniformHueButtonRow.appendChild(td)
-        uniformHueButtons.push(uniformHueButton);
+            let uniformHueButton = document.createElement("button");
+            uniformHueButton.innerHTML = `Remove outlier colors in ${colorGroupID}`
+            uniformHueButton.title = `Set all ${colorGroupID} colors to the same hue`
+            td = document.createElement("td")
+            td.appendChild(uniformHueButton)
+            colorModTableUniformHueButtonRow.appendChild(td)
+            uniformHueButtons.push(uniformHueButton);
 
-        let resetColorButton = document.createElement("button");
-        resetColorButton.innerHTML = `Reset Colors (${colorGroupID})`
-        resetColorButton.title = `Reset ${colorGroupID} colors to their original color`
-        td = document.createElement("td")
-        td.appendChild(resetColorButton)
-        colorModTableResetHueButtonRow.appendChild(td)
-        resetColorButtons.push(resetColorButton);
+            let resetColorButton = document.createElement("button");
+            resetColorButton.innerHTML = `Reset Colors (${colorGroupID})`
+            resetColorButton.title = `Reset ${colorGroupID} colors to their original color`
+            td = document.createElement("td")
+            td.appendChild(resetColorButton)
+            colorModTableResetHueButtonRow.appendChild(td)
+            resetColorButtons.push(resetColorButton);
 
-        let randomizeColorButton = document.createElement("button");
-        randomizeColorButton.innerHTML = `Randomize Colors (${colorGroupID})`
-        randomizeColorButton.title = `Randomize Saturation, Brightness and Hue of ${colorGroupID} colors`
-        td = document.createElement("td")
-        td.appendChild(randomizeColorButton)
-        colorModTableRandomizeColorButtonRow.appendChild(td)
-        randomizeColorButtons.push(randomizeColorButton)
+            let randomizeColorButton = document.createElement("button");
+            randomizeColorButton.innerHTML = `Randomize Colors (${colorGroupID})`
+            randomizeColorButton.title = `Randomize Saturation, Brightness and Hue of ${colorGroupID} colors`
+            td = document.createElement("td")
+            td.appendChild(randomizeColorButton)
+            colorModTableRandomizeColorButtonRow.appendChild(td)
+            randomizeColorButtons.push(randomizeColorButton)
 
-        let randomizeHueButton = document.createElement("button");
-        randomizeHueButton.innerHTML = `Randomize Hues (${colorGroupID})`
-        randomizeHueButton.title = `Randomize Hue of ${colorGroupID} colors (keep saturation and brightness as is)`
-        td = document.createElement("td")
-        td.appendChild(randomizeHueButton)
-        colorModTableRandomizeHueButtonRow.appendChild(td)
-        randomizeHueButtons.push(randomizeHueButton)
+            let randomizeHueButton = document.createElement("button");
+            randomizeHueButton.innerHTML = `Randomize Hues (${colorGroupID})`
+            randomizeHueButton.title = `Randomize Hue of ${colorGroupID} colors (keep saturation and brightness as is)`
+            td = document.createElement("td")
+            td.appendChild(randomizeHueButton)
+            colorModTableRandomizeHueButtonRow.appendChild(td)
+            randomizeHueButtons.push(randomizeHueButton)
     }
+
+        
 
     let resetSliders = () => {
         for (let slider of hueSliders) {
@@ -210,16 +239,16 @@ function loadValues() {
         }
     }
 
-    let creatureColors = [];
-    let defaultCreatureColors = [];
-    let currentCreatureColors = [];
+    character.characterColors = []
+    character.defaultColors = []
+    let creatureColors = character.characterColors;
+    let defaultCreatureColors = character.defaultColors;
     let colorPalette = defaultPalettes[0];
 
     colorPalette.colors.forEach(value => {
         if (!!value) {
             creatureColors.push({ color: value });
             defaultCreatureColors.push(value)
-            currentCreatureColors.push(value)
         }
     });
 
@@ -278,7 +307,25 @@ function loadValues() {
         animationMSPerFrame = animationSeconds * 1000 / (selectedAnimation.animationImages.length);
     }
 
-    let creature = new Creature(animation, creatureColors, defaultCreatureColors, canvas, ctx, colorGroups, creatureTableRows, yamlOptionName, backgroundColorInCanvas, textarea, resetSliders, mainColorsPerGroup, firstColorIndexInYamlOption, maxPixelSize, animationMSPerFrame);
+    let htmlElements = {
+        canvas,
+        ctx,
+        textarea, 
+        creatureTableRows, 
+        resetSliders, 
+        pixelSizeSlider
+    }
+
+    let pixelData = {
+        maxPixelSize, maxPixelHeight, maxPixelWidth
+    }
+
+    let creature = new Creature(
+        htmlElements,
+        pixelData, 
+        animationMSPerFrame, 
+        character
+    );
 
 
     animationDropDown.addEventListener("change", () => {
@@ -307,7 +354,7 @@ function loadValues() {
     canvas.addEventListener("click", () => { creature.changeAnimation(/*saveGifHelper*/) }, false);
 
 
-    for (let colorGroupIndex = 0; colorGroupIndex < colorGroups.length; colorGroupIndex++) {
+    for (let colorGroupIndex = 0; colorGroupIndex < hueSliders.length; colorGroupIndex++) {
         let hueSlider = hueSliders[colorGroupIndex]
         if (colorGroupIndex === hueSliders.length - 1) {
             hueSlider.addEventListener("input", () => { creature.setAllColorsRelativeHue(Number.parseInt(hueSlider.value)) })
@@ -337,13 +384,13 @@ function loadValues() {
         let resetColorButton = resetColorButtons[colorGroupIndex];
         resetColorButton.addEventListener("click", () => { creature.resetColorGroupToDefault(colorGroupIndex) });
         let randomizeColorButton = randomizeColorButtons[colorGroupIndex];
-        if (colorGroupIndex === colorGroups.length - 1) {
+        if (colorGroupIndex === hueSliders.length - 1) {
             randomizeColorButton.addEventListener("click", () => { creature.randomizeAllColorQualities() });
         } else {
             randomizeColorButton.addEventListener("click", () => { creature.randomizeGroupColorQualities(colorGroupIndex) });
         }
         let randomizeHueButton = randomizeHueButtons[colorGroupIndex];
-        if (colorGroupIndex === colorGroups.length - 1) {
+        if (colorGroupIndex === hueSliders.length - 1) {
             randomizeHueButton.addEventListener("click", () => { creature.randomizeHues() });
         } else {
             randomizeHueButton.addEventListener("click", () => { creature.randomizeHueOfGroup(colorGroupIndex) });
@@ -353,9 +400,9 @@ function loadValues() {
     pixelSizeSlider.max = `${maxPixelSize}`
     pixelSizeSlider.addEventListener("input", () => { creature.setPixelSize(pixelSizeSlider.value) })
 
-    function getMaxPixelSize() {
-        let maxPixelHeight = 0;
-        let maxPixelWidth = 0;
+    function getMaxPixelSize(optionalCanvasLength) {
+        maxPixelHeight = 0;
+        maxPixelWidth = 0;
         let animation = selectedAnimation.animationImages;
         for (let image of animation) {
             let pixelHeight = image.length;
@@ -364,8 +411,10 @@ function loadValues() {
             maxPixelWidth = Math.max(maxPixelWidth, pixelWidth);
         }
 
-        let maxPixelSizeByHeight = Math.floor((canvas.height - 10) / maxPixelHeight);
-        let maxPixelSizeByWidth = Math.floor((canvas.width - 10) / maxPixelWidth);
+        let height = optionalCanvasLength ? optionalCanvasLength : canvas.height;
+        let width = optionalCanvasLength ? optionalCanvasLength : canvas.width;
+        let maxPixelSizeByHeight = Math.floor((height - 10) / maxPixelHeight);
+        let maxPixelSizeByWidth = Math.floor((width - 10) / maxPixelWidth);
         maxPixelSize = Math.min(maxPixelSizeByHeight, maxPixelSizeByWidth);
     }
 
@@ -374,12 +423,11 @@ function loadValues() {
         if (selectedAnimation.animationName !== animationName) {
             selectedAnimation = animations.find(it => it.animationName == animationName);
             secondsPerAnimationLoop.value = selectedAnimation.animationSeconds;
-            
+
             getMaxPixelSize()
-            
-            
+
             creature.updateAnimation(selectedAnimation.animationImages);
-            creature.updateMaxPixelSize(maxPixelSize);
+            creature.updateMaxPixelSize(maxPixelSize, maxPixelHeight, maxPixelWidth);
         }
         if (!speed) {
             speed = selectedAnimation.animationSeconds;
@@ -396,13 +444,17 @@ function loadValues() {
     })
 
     canvasSizeSlider.addEventListener("change", () => {
-        canvas.height = canvasSizeSlider.value
-        canvas.width = canvasSizeSlider.value
         let ctx = canvas.getContext("2d");
 
         selectedAnimation = animations.find(it => it.animationName == animationDropDown.value);
 
-        getMaxPixelSize();
+        getMaxPixelSize(canvasSizeSlider.value);
+
+        let newCanvasHeight = maxPixelSize * maxPixelHeight + 10
+        let newCanvasWidth = maxPixelSize * maxPixelWidth + 10
+
+        canvas.height = newCanvasHeight
+        canvas.width = newCanvasWidth
 
         pixelSizeSlider.max = `${maxPixelSize}`
         pixelSizeSlider.value = `${Math.min(maxPixelSize, pixelSizeSlider.value)}`
@@ -410,7 +462,7 @@ function loadValues() {
 
 
         creature.updateAnimation(selectedAnimation.animationImages);
-        creature.updateMaxPixelSize(maxPixelSize);
+        creature.updateMaxPixelSize(maxPixelSize, maxPixelHeight, maxPixelWidth);
         creature.updateCtx(ctx)
         creature.updateCanvas(canvas)
     })
@@ -429,4 +481,49 @@ function loadValues() {
     resetSliders();
 
     creature.changeAnimation();
+    creature.setPixelSize(maxPixelSize);
+    pixelSizeSlider.value = maxPixelSize;
+
+}
+
+function loadValues() {
+
+    characterContainerOriginalElement = document.querySelector("#characterContainer");
+    body = characterContainerOriginalElement.parentNode;
+
+    for (let character of characters) {
+        createCreature(character);
+    }
+
+    for (let characterContainer of characterContainers) {
+        let buttonContainer = characterContainer.querySelector("#characterButtons")
+        console.log(buttonContainer);
+        buttonContainer.innerHTML = "";
+        characterButtons.forEach((button, index) => {
+            let buttonClone = button.cloneNode(true)
+            buttonContainer.appendChild(buttonClone);
+            buttonClone.addEventListener("click", () => {
+                let previousCharacterIndex = currentCharacterIndex;
+                currentCharacterIndex = index;
+                switchCharacterByIndex(previousCharacterIndex, currentCharacterIndex);
+            })
+        })
+    }
+
+    currentCharacterIndex = 0;
+
+    body.removeChild(characterContainerOriginalElement);
+    body.appendChild(characterContainers[currentCharacterIndex]);
+    switchCharacterByIndex(0, 0);
+   
+}
+
+function switchCharacterByIndex(previousIndex, currentIndex) {
+    body.replaceChild(characterContainers[currentIndex], characterContainers[previousIndex]);
+    document.documentElement.style.setProperty('--buttonFontColor', characters[currentIndex].buttonFontColor);
+    document.documentElement.style.setProperty('--background', characters[currentIndex].backgroundColor);
+    document.documentElement.style.setProperty('--buttonGroupA', characters[currentIndex].buttonColor);
+    document.documentElement.style.setProperty('--buttonGroupB', characters[currentIndex].buttonOutline);
+    document.documentElement.style.setProperty('--buttonGroupASemiTransparent', characters[currentIndex].buttonColor + "c2");
+    document.documentElement.style.setProperty('--buttonGroupBSemiTransparent', characters[currentIndex].buttonOutline + "c2");
 }
