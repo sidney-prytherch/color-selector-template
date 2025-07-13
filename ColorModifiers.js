@@ -43,6 +43,14 @@ class ColorModifiers {
         return this.hslToRGB(hsl);
     }
 
+    static getBrightComplimentaryColor(rgb) {
+        var hsl = this.rgbToHSL(rgb);
+        hsl.h = (hsl.h + 180) % 360;
+        hsl.s = 1;
+        hsl.l = .5;
+        return this.hslToRGB(hsl);
+    }
+
     static setSaturation(rgb, newSaturation) {
         var hsl = this.rgbToHSL(rgb);
         hsl.s = newSaturation;

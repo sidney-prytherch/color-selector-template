@@ -11,6 +11,8 @@ let currentCharacterIndex = 0;
 
 function createCreature(character) {
 
+    let creature;
+
     let characterContainerElement = characterContainerOriginalElement.cloneNode(true);
     characterContainers.push(characterContainerElement);
     
@@ -270,6 +272,7 @@ function createCreature(character) {
                     for (let color of creatureColors) {
                         if (table[y][x] === color.color) {
                             table[y][x] = color;
+                            color.outline = false;
                         }
                     }
                 }
@@ -289,8 +292,15 @@ function createCreature(character) {
 
         let span = document.createElement("span");
         span.innerHTML = `${i + 1}:~ ${creatureColors[i].color}`;
-
         cell3.appendChild(span)
+        cell3.addEventListener("mouseover", () => {
+            creatureTableRows[i].outline = true;
+            creature.draw();
+        })
+        cell3.addEventListener("mouseout", () => {
+            creatureTableRows[i].outline = false;
+            creature.draw();
+        })
 
         let input = document.createElement("input");
         input.type = "color";
@@ -327,7 +337,8 @@ function createCreature(character) {
                 input: input,
                 span: span,
                 colorIndex: i,
-                isLocked: false
+                isLocked: false,
+                outline: false
             }
         );
     }
@@ -354,7 +365,7 @@ function createCreature(character) {
         maxPixelSize, maxPixelHeight, maxPixelWidth
     }
 
-    let creature = new Creature(
+    creature = new Creature(
         htmlElements,
         pixelData, 
         animationMSPerFrame, 
