@@ -54,6 +54,10 @@ function createCreature(character) {
         animationDropDown.appendChild(option);
     }
 
+    if (animations.length === 1) {
+        animationDropDown.parentNode.style.display = "none"
+    }
+
     for (let defaultPalette of defaultPalettes) {
         let option = document.createElement("option");
         option.value = defaultPalette.name;
